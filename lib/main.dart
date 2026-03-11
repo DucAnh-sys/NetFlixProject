@@ -1,9 +1,13 @@
-import 'package:clone_netflix/features/discovery/home.dart';
-import 'package:clone_netflix/features/discovery/playvideo.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Đảm bảo đã import cái này
+import 'features/discovery/movie_detail.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -11,7 +15,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return MaterialApp(title: 'Flutter Demo', home: NetflixVideoPlayer(videoUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',));
-    return MaterialApp(title: 'Flutter Demo', home: MovieDetailScreen());
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Netflix Clone',
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.red,
+      ),
+      // Truyền movieId để test trang Detail
+      home: const MovieDetailScreen(movieId: 297762),
+    );
   }
 }

@@ -68,4 +68,9 @@ class Movie {
       'vote_count': voteCount,
     };
   }
+
+  String get fullBackdropPath =>
+      'https://image.tmdb.org/t/p/original$backdropPath';
+
+  String get fullPosterPath => 'https://image.tmdb.org/t/p/w500$posterPath';
 }

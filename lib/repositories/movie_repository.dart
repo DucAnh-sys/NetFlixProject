@@ -1,4 +1,5 @@
   import 'package:clone_netflix/config/api_config.dart';
+import 'package:clone_netflix/models/actor.dart';
   import 'package:dio/dio.dart';
   import 'package:riverpod_annotation/riverpod_annotation.dart';
   import '../../models/movie.dart';
@@ -51,6 +52,19 @@
         }
       } on DioException catch (e) {
         print('Dio Error: ${e.message}');
+        rethrow;
+      }
+    }
+
+    Future<List<Actor>> fetchActors(int movieId) async {
+      try {
+        final response = await _dio.get('/movie/$movieId/credits');
+        if (response.statusCode == 200) {
+          final List<dynamic> castJson = response.data['cast'];
+          return castJson.take(15).map((json) => Actor.fromJson(json)).toList();
+        }
+        throw Exception('Lỗi lấy danh sách diễn viên');
+      } catch (e) {
         rethrow;
       }
     }

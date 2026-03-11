@@ -22,8 +22,7 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         primarySwatch: Colors.red,
       ),
-      // Truyền movieId để test trang Detail
-      home: const MovieDetailScreen(movieId: 297762),
+      home: const MovieDetailScreen(movieId: 799882),
     );
   }
 }

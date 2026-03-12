@@ -1,13 +1,19 @@
+
 import 'package:flutter/material.dart';
-import 'package:project/UI/page/MyListFilmUI.dart';
-import 'package:project/UI/page/NotificationsUI.dart';
-import 'package:project/UI/page/PersonalizationUI.dart';
-import 'package:project/UI/page/ReviewUI.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:project/features/personalization/UI/page/PersonalizationUI.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
-class MyApp extends StatelessWidget{
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

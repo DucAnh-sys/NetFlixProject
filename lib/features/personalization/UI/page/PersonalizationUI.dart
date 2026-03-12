@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:project/UI/page/MyListFilmUI.dart';
-import 'package:project/UI/page/NotificationsUI.dart';
-import 'package:project/model/MyListFilm.dart';
-import 'package:project/model/NotificationModel.dart';
-
-import 'package:flutter/material.dart';
-
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:project/features/discovery/home.dart';
+import 'package:project/services/movie_provider.dart';
 import 'MyListFilmUI.dart';
 import 'NotificationsUI.dart';
 
@@ -245,48 +240,87 @@ class SectionTitle extends StatelessWidget {
     );
   }
 }
-class MovieRow extends StatelessWidget {
+class MovieRow extends ConsumerWidget {
   const MovieRow({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 190,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: 3,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          return Column(
-            children: [
+  Widget build(BuildContext context, WidgetRef ref) {
 
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  "assets/images/StrangeThings.webp",
-                  width: 130,
-                  height: 160,
-                  fit: BoxFit.cover,
-                ),
-              ),
+    final moviesAsync = ref.watch(popularMoviesProvider);
 
-              const SizedBox(height: 6),
+    return moviesAsync.when(
 
-              const Row(
-                children: [
-                  Icon(Icons.share, color: Colors.white54, size: 18),
-                  SizedBox(width: 4),
-                  Text(
-                    "Chia sẻ",
-                    style: TextStyle(color: Colors.white54),
-                  )
-                ],
-              )
-            ],
-          );
-        },
+      loading: () => const Center(
+        child: CircularProgressIndicator(),
       ),
+
+      error: (error, stack) => Text(
+        "Lỗi: $error",
+        style: const TextStyle(color: Colors.white),
+      ),
+
+      data: (movies) {
+        return SizedBox(
+          height: 190,
+
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+
+            itemCount: movies.length,
+
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+
+              itemBuilder: (context, index) {
+
+                final movie = movies[index];
+
+                return GestureDetector(
+
+                  onTap: () {
+                    print(movie.id);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MovieDetailScreen(
+                          movieId: movie.id,
+                        ),
+                      ),
+                    );
+                  },
+
+                  child: Column(
+                    children: [
+
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          movie.fullPosterPath,
+                          width: 130,
+                          height: 160,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      const Row(
+                        children: [
+                          Icon(Icons.share, color: Colors.white54, size: 18),
+                          SizedBox(width: 4),
+                          Text(
+                            "Chia sẻ",
+                            style: TextStyle(color: Colors.white54),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                );
+              }
+          ),
+        );
+      },
     );
   }
 }

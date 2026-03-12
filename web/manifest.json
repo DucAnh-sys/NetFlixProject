@@ -1,6 +1,8 @@
 {
     "name": "project",
     "short_name": "project",
+    "name": "clone_netflix",
+    "short_name": "clone_netflix",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

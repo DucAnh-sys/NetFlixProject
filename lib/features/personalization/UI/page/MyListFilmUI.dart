@@ -1,86 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:project/UI/page/PersonalizationUI.dart';
-import 'package:project/model/MyListFilm.dart';
-class MyListScreen extends StatelessWidget {
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:project/features/personalization/UI/page/PersonalizationUI.dart';
+import 'package:project/features/personalization/model/MyListFilm.dart';
+import 'package:project/models/movie.dart';
+import 'package:project/services/movie_provider.dart';
+class MyListScreen extends ConsumerWidget {
   const MyListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
 
-    final List<Mylistfilm> myFilms = Mylistfilm.listMyFilm();
+    final moviesAsync = ref.watch(popularMoviesProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFF181111),
+
       appBar: AppBar(
         backgroundColor: const Color(0xFF181111),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const MyNetflixScreen(),
-              ),
-            );
+            Navigator.pop(context);
           },
         ),
         title: const Text(
           "Danh sách của tôi",
-          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                // TabItem(title: "Movies", isActive: true),
-                // SizedBox(width: 24),
-                // TabItem(title: "TV Shows"),
-                // SizedBox(width: 24),
-                // TabItem(title: "Downloaded"),
-              ],
-            ),
+
+      body: moviesAsync.when(
+
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
+
+        error: (err, stack) => Center(
+          child: Text(
+            "Lỗi: $err",
+            style: const TextStyle(color: Colors.white),
           ),
+        ),
 
-          const SizedBox(height: 16),
+        data: (movies) {
 
-          // Grid
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GridView.builder(
-                itemCount: myFilms.length,
-                gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 2 / 3,
-                ),
-                itemBuilder: (context, index) {
+          return GridView.builder(
+            padding: const EdgeInsets.all(16),
 
-                  final movie = myFilms[index];
+            itemCount: movies.length,
 
-                  return MovieCard(
-                    title: movie.title,
-                    imageUrl: movie.image,
-                  );
-                },
-              ),
+            gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 2 / 3,
             ),
-          ),
 
-          // Bottom Section
-        ],
+            itemBuilder: (context, index) {
 
+              final movie = movies[index];
+
+              return MovieCard(movie: movie);
+            },
+          );
+        },
       ),
+
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF181111), // nền đen Netflix
-        selectedItemColor: const Color(0xFFE60A15), // đỏ Netflix
+        backgroundColor: const Color(0xFF181111),
+        selectedItemColor: const Color(0xFFE60A15),
         unselectedItemColor: Colors.white60,
         type: BottomNavigationBarType.fixed,
         items: const [
@@ -102,25 +92,28 @@ class MyListScreen extends StatelessWidget {
   }
 }
 class MovieCard extends StatelessWidget {
-  final String title;
-  final String imageUrl;
+
+  final Movie movie;
 
   const MovieCard({
     super.key,
-    required this.title,
-    required this.imageUrl,
+    required this.movie,
   });
 
   @override
   Widget build(BuildContext context) {
+
     return Stack(
       children: [
+
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
+
           child: Stack(
             children: [
-              Image.asset(
-                imageUrl,
+
+              Image.network(
+                movie.fullPosterPath,
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
@@ -144,7 +137,7 @@ class MovieCard extends StatelessWidget {
                 left: 8,
                 right: 8,
                 child: Text(
-                  title,
+                  movie.title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

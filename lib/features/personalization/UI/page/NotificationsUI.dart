@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:project/UI/page/PersonalizationUI.dart';
-import 'package:project/model/NotificationModel.dart';
+import 'package:project/features/personalization/UI/page/PersonalizationUI.dart';
+
+import 'package:project/features/personalization/model/NotificationModel.dart';
 
 class NotificationScreen extends StatelessWidget{
   const NotificationScreen({super.key});

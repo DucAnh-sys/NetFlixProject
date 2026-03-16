@@ -1,5 +1,5 @@
 import 'package:clone_netflix/models/movie.dart';
-import 'package:clone_netflix/services/movie_provider.dart';
+import 'package:clone_netflix/services/movie_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,7 +9,7 @@ class MyListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final moviesAsync = ref.watch(popularMoviesProvider);
+    final moviesAsync = ref.watch(popularTvShowProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFF181111),

@@ -32,11 +32,11 @@ dependencies:
     sdk: flutter
   video_player: ^2.8.1
   cupertino_icons: ^1.0.8
-
   flutter_riverpod: ^2.5.1
   dio: ^5.4.1
   http: ^1.6.0
   riverpod_annotation: ^2.3.5
+  youtube_player_flutter: ^9.1.1
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,5 @@
 import 'package:clone_netflix/features/discovery/movie_detail.dart';
-import 'package:clone_netflix/services/movie_provider.dart';
+import 'package:clone_netflix/services/movie_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'my_list_film_ui.dart';
@@ -246,7 +246,7 @@ class MovieRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final moviesAsync = ref.watch(popularMoviesProvider);
+    final moviesAsync = ref.watch(popularTvShowProvider);
 
     return moviesAsync.when(
 
@@ -283,7 +283,7 @@ class MovieRow extends ConsumerWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) => MovieDetailScreen(
-                          movieId: movie.id,
+                          movie: movie,
                         ),
                       ),
                     );

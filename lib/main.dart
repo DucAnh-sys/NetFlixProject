@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Đảm bảo đã import cái này
 import 'features/discovery/movie_detail.dart';
-
+import 'features/content/homepage.dart';
 void main() {
   runApp(
     const ProviderScope(
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         primarySwatch: Colors.red,
       ),
-      home: const MovieDetailScreen(movieId: 799882),
+      home: const HomeScreen(),
     );
   }
 }

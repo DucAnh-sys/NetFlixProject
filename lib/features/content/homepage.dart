@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/Genres.dart';
 import '../../services/genre_service.dart';
-import '../../services/movie_provider.dart';
-
+import '../../services/movie_service.dart';
+import '../component/footer.dart';
+import '../discovery/movie_detail.dart';
 void main() {
   runApp(const ProviderScope(child: NetflixCloneApp()));
 }
@@ -24,6 +25,7 @@ class NetflixCloneApp extends StatelessWidget {
         fontFamily: 'SplineSans',
       ),
       home: const HomeScreen(),
+
     );
   }
 }
@@ -42,7 +44,7 @@ class HomeScreen extends ConsumerWidget {
     final nowPlayingAsync = ref.watch(nowPlayingMoviesProvider);
     final popularAsync = ref.watch(popularMoviesProvider);
     final upcomingAsync = ref.watch(upcomingMoviesProvider);
-
+    final topRatedAsync = ref.watch(topRatedMoviesProvider);
     return Scaffold(
       body: Stack(
         children: [
@@ -81,6 +83,14 @@ class HomeScreen extends ConsumerWidget {
                         _AsyncMovieSection(
                           title: 'Now Playing',
                           asyncMovies: nowPlayingAsync,
+                          onMovieTap: (movie) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => MovieDetailScreen(movie: movie),
+                              ),
+                            );
+                          },
                         ),
 
                         const SizedBox(height: 28),
@@ -89,17 +99,24 @@ class HomeScreen extends ConsumerWidget {
                           title: 'Popular on Netflix',
                           asyncMovies: popularAsync,
                           highlightedIndex: 1,
+                          onMovieTap: (movie) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => MovieDetailScreen(movie: movie),
+                              ),
+                            );
+                          },
                         ),
 
                         const SizedBox(height: 28),
 
-                        popularAsync.when(
+                        topRatedAsync.when(
                           loading: () => const _SectionLoadingPlaceholder(
                             title: 'Top 10 in your country',
                           ),
                           error: (_, __) => const SizedBox.shrink(),
-                          data: (popularMovies) =>
-                              _buildTop10Section(popularMovies),
+                          data: (movies) => _buildTop10Section(movies),
                         ),
 
                         const SizedBox(height: 28),
@@ -107,6 +124,14 @@ class HomeScreen extends ConsumerWidget {
                         _AsyncMovieSection(
                           title: 'Upcoming',
                           asyncMovies: upcomingAsync,
+                          onMovieTap: (movie) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => MovieDetailScreen(movie: movie),
+                              ),
+                            );
+                          },
                         ),
 
                         const SizedBox(height: 120),
@@ -120,7 +145,7 @@ class HomeScreen extends ConsumerWidget {
           _buildTopOverlay(),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: const AppFooter(currentIndex: 0),
     );
   }
 
@@ -370,44 +395,54 @@ class HomeScreen extends ConsumerWidget {
 
                 return SizedBox(
                   width: 140,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned(
-                        left: -24,
-                        bottom: -4,
-                        child: Text(
-                          '${index + 1}',
-                          style: TextStyle(
-                            fontSize: 108,
-                            fontWeight: FontWeight.w900,
-                            foreground: Paint()
-                              ..style = PaintingStyle.stroke
-                              ..strokeWidth = 2
-                              ..color = Colors.white.withOpacity(0.6),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MovieDetailScreen(movie: movie),
+                        ),
+                      );
+                    },
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned(
+                          left: -24,
+                          bottom: -4,
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              fontSize: 108,
+                              fontWeight: FontWeight.w900,
+                              foreground: Paint()
+                                ..style = PaintingStyle.stroke
+                                ..strokeWidth = 2
+                                ..color = Colors.white.withOpacity(0.6),
+                            ),
                           ),
                         ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 18),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black54,
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
+                        Container(
+                          margin: const EdgeInsets.only(left: 18),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black54,
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: _MoviePosterImage(
+                            movie: movie,
+                            width: 120,
+                            height: 180,
+                          ),
                         ),
-                        clipBehavior: Clip.antiAlias,
-                        child: _MoviePosterImage(
-                          movie: movie,
-                          width: 120,
-                          height: 180,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -418,65 +453,18 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBottomNav() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 22),
-      decoration: BoxDecoration(
-        color: backgroundDark.withOpacity(0.95),
-        border: const Border(
-          top: BorderSide(color: Color(0xFF1E293B), width: 0.6),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: const [
-            Expanded(
-              child: _BottomNavItem(
-                icon: Icons.home,
-                label: 'Home',
-                active: true,
-              ),
-            ),
-            Expanded(
-              child: _BottomNavItem(
-                icon: Icons.sports_esports,
-                label: 'Games',
-              ),
-            ),
-            Expanded(
-              child: _BottomNavItem(
-                icon: Icons.video_library,
-                label: 'New & Hot',
-              ),
-            ),
-            Expanded(
-              child: _BottomNavItem(
-                icon: Icons.sentiment_very_satisfied,
-                label: 'Fast Laughs',
-              ),
-            ),
-            Expanded(
-              child: _BottomNavItem(
-                icon: Icons.download_for_offline,
-                label: 'Downloads',
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _AsyncMovieSection extends StatelessWidget {
   final String title;
   final AsyncValue<List<Movie>> asyncMovies;
   final int? highlightedIndex;
+  final ValueChanged<Movie> onMovieTap;
 
   const _AsyncMovieSection({
     required this.title,
     required this.asyncMovies,
+    required this.onMovieTap,
     this.highlightedIndex,
   });
 
@@ -495,19 +483,21 @@ class _AsyncMovieSection extends StatelessWidget {
         title: title,
         movies: movies,
         highlightedIndex: highlightedIndex,
+        onMovieTap: onMovieTap,
       ),
     );
   }
 }
-
 class _MoviePosterSection extends StatelessWidget {
   final String title;
   final List<Movie> movies;
   final int? highlightedIndex;
+  final ValueChanged<Movie> onMovieTap;
 
   const _MoviePosterSection({
     required this.title,
     required this.movies,
+    required this.onMovieTap,
     this.highlightedIndex,
   });
 
@@ -539,26 +529,30 @@ class _MoviePosterSection extends StatelessWidget {
                 final movie = movies[index];
                 final isHighlighted = highlightedIndex == index;
 
-                return Container(
-                  width: 120,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: isHighlighted
-                        ? Border.all(
-                      color: const Color(0xFFE70814).withOpacity(0.4),
-                      width: 2,
-                    )
-                        : null,
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black45,
-                        blurRadius: 6,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
+                return InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => onMovieTap(movie),
+                  child: Container(
+                    width: 120,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: isHighlighted
+                          ? Border.all(
+                        color: const Color(0xFFE70814).withOpacity(0.4),
+                        width: 2,
+                      )
+                          : null,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black45,
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: _MoviePosterImage(movie: movie),
                   ),
-                  clipBehavior: Clip.antiAlias,
-                  child: _MoviePosterImage(movie: movie),
                 );
               },
             ),
@@ -568,7 +562,6 @@ class _MoviePosterSection extends StatelessWidget {
     );
   }
 }
-
 class _MoviePosterImage extends StatelessWidget {
   final Movie movie;
   final double? width;

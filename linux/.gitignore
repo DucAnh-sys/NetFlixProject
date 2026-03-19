@@ -1,1 +1,3 @@
 flutter/ephemeral
+*.g.dart
+*.freezed.dart

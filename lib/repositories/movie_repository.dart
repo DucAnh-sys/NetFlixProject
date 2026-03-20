@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:clone_netflix/config/api_config.dart';
+import 'package:clone_netflix/db/favorite_db.dart';
 import 'package:clone_netflix/models/actor.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sqflite/sqflite.dart';
 import '../../models/movie.dart';
 
 part 'movie_repository.g.dart';
@@ -15,7 +19,7 @@ class MovieRepository extends _$MovieRepository {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiConfig.baseUrl,
-        queryParameters: {'api_key': ApiConfig.apiKey, 'language': 'vi-VN'},
+        queryParameters: {'api_key': ApiConfig.apiKey, 'language': 'en-US'},
       ),
     );
   }
@@ -126,4 +130,6 @@ class MovieRepository extends _$MovieRepository {
   Future<void> addToWatchlist(Movie movie) async {
     print("Đã thêm ${movie.title} vào danh sách");
   }
+
+
 }

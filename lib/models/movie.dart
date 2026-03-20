@@ -125,6 +125,16 @@ class Movie {
       'vote_average': voteAverage,
     };
   }
+  Map<String,dynamic> toFavoriteMap(){
+    return {
+      'id':id,
+      'title':title,
+      'poster_path': posterPath,
+      'backdrop_path': backdropPath,
+      'vote_average': voteAverage,
+      'media_type':mediaType.name,
+    };
+  }
 
   String get fullBackdropPath => backdropPath.isNotEmpty
       ? 'https://image.tmdb.org/t/p/original$backdropPath'

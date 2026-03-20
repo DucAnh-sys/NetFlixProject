@@ -1,3 +1,4 @@
+import 'package:clone_netflix/db/favorite_db.dart';
 import 'package:clone_netflix/models/actor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

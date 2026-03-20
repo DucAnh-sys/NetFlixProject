@@ -1,4 +1,5 @@
 import 'package:clone_netflix/db/favorite_db.dart';
+import 'package:clone_netflix/db/notification_db.dart';
 import 'package:clone_netflix/features/discovery/episode_screen.dart';
 import 'package:clone_netflix/features/discovery/more_like_this.dart';
 import 'package:clone_netflix/features/discovery/play_video.dart';
@@ -287,6 +288,7 @@ class MovieDetailScreen extends ConsumerWidget {
         GestureDetector(
           onTap: () async {
             await notifier.toggle(movie); // 🔥 update ngay
+            await NotificationDb.addNotification(movie);
           },
           child: Column(
             children: [

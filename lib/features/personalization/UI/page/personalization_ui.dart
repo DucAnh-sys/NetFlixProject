@@ -1,3 +1,4 @@
+import 'package:clone_netflix/db/notification_db.dart';
 import 'package:clone_netflix/features/discovery/movie_detail.dart';
 import 'package:clone_netflix/services/favorite_provider.dart';
 import 'package:clone_netflix/services/movie_service.dart';
@@ -93,7 +94,6 @@ class ProfileHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-
           const CircleAvatar(
             radius: 20,
             backgroundImage: AssetImage("assets/images/avatar.png"),
@@ -118,14 +118,57 @@ class ProfileHeader extends StatelessWidget {
 
           const SizedBox(width: 15),
 
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const NotificationScreen(),
-                ),
+          // 🔥 BADGE NOTIFICATION
+          FutureBuilder<int>(
+            future: NotificationDb.getCount(),
+            builder: (context, snapshot) {
+              final count = snapshot.data ?? 0;
+
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const NotificationScreen(),
+                        ),
+                      );
+
+                      // 🔥 reload lại UI khi quay về
+                      (context as Element).markNeedsBuild();
+                    },
+                  ),
+
+                  // 🔴 BADGE
+                  if (count > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Center(
+                          child: Text(
+                            count > 99 ? "99+" : "$count",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               );
             },
           ),
@@ -262,8 +305,6 @@ class MovieRow extends ConsumerWidget {
         ),
       );
     }
-
-    // 🔥 CASE 2: CÓ PHIM
     return SizedBox(
       height: 190,
       child: ListView.separated(

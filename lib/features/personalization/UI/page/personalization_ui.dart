@@ -4,6 +4,7 @@ import 'package:clone_netflix/services/favorite_provider.dart';
 import 'package:clone_netflix/services/movie_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../component/footer.dart';
 import 'my_list_film_ui.dart';
 import 'notification_ui.dart';
 
@@ -61,27 +62,7 @@ class MyNetflixScreen extends StatelessWidget {
         ),
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.black,
-        selectedItemColor: const Color(0xFFE50914),
-        unselectedItemColor: Colors.white54,
-        currentIndex: 2,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Trang chủ",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: "Tìm kiếm",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Netflix của tôi",
-          ),
-        ],
-      ),
+      bottomNavigationBar: const AppFooter(currentIndex: 2),
     );
   }
 }

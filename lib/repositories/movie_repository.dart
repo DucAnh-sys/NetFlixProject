@@ -48,8 +48,52 @@ class MovieRepository {
     }
   }
 
+  Future<List<Movie>> searchMovies(String query) async {
+    final cleanQuery = query.trim();
+
+    if (cleanQuery.isEmpty) return [];
+
+    try {
+      final response = await _dio.get(
+        '/search/movie',
+        queryParameters: {
+          'query': cleanQuery,
+          'page': 1,
+          'include_adult': false,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> results = response.data['results'];
+        return results.map((json) {
+          return Movie.fromJson(json, mediaTypeOverride: MediaType.movie);
+        }).toList();
+      } else {
+        throw Exception('Lỗi tìm kiếm phim: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      print('Dio Error: ${e.message}');
+      rethrow;
+    } catch (error) {
+      print('Unexpected Error: $error');
+      rethrow;
+    }
+  }
+
   Future<List<Movie>> fetchMoviePopular() {
     return fetchMovies("popular", MediaType.movie);
+  }
+
+  Future<List<Movie>> fetchNowPlaying() {
+    return fetchMovies("now_playing", MediaType.movie);
+  }
+
+  Future<List<Movie>> fetchUpcoming() {
+    return fetchMovies("upcoming", MediaType.movie);
+  }
+
+  Future<List<Movie>> fetchTopRated() {
+    return fetchMovies("top_rated", MediaType.movie);
   }
 
   Future<List<Movie>> fetchTvShowPopular() {
@@ -139,6 +183,44 @@ class MovieRepository {
         throw Exception("not found episode for movie: $movieId");
       }
     } catch (error) {
+      rethrow;
+    }
+  }
+
+  Future<List<Movie>> fetchByGenres({
+    required List<int> genreIds,
+    required bool isMovie,
+  }) async {
+    if (genreIds.isEmpty) return [];
+
+    final String category = isMovie ? 'movie' : 'tv';
+    final MediaType mediaType = isMovie ? MediaType.movie : MediaType.tv;
+
+    try {
+      final response = await _dio.get(
+        '/discover/$category',
+        queryParameters: {
+          'with_genres': genreIds.join(','),
+          'sort_by': 'popularity.desc',
+          'include_adult': false,
+          'page': 1,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> results = response.data['results'] ?? [];
+
+        return results.map((json) {
+          return Movie.fromJson(json, mediaTypeOverride: mediaType);
+        }).toList();
+      } else {
+        throw Exception('Lỗi lấy phim theo genre: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      print('Dio Error: ${e.message}');
+      rethrow;
+    } catch (error) {
+      print('Unexpected Error: $error');
       rethrow;
     }
   }

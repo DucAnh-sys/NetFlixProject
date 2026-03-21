@@ -75,7 +75,7 @@ class MovieDetailScreen extends ConsumerWidget {
                     _buildCastList(ref, movie),
 
                     const SizedBox(height: 24),
-                    _buildNavigationTiles(context, movie.title,movie),
+                    _buildNavigationTiles(context, movie),
                   ],
                 ),
               ),
@@ -161,13 +161,13 @@ class MovieDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNavigationTiles(BuildContext context, String title, Movie movie) {
+  Widget _buildNavigationTiles(BuildContext context, Movie movie) {
     return Column(
       children: [
         _buildTile(context, 'Tập phim & Mùa', Icons.video_library_outlined, () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (c) => EpisodeScreen(movieTitle: title)),
+            MaterialPageRoute(builder: (c) => EpisodeScreen(movie: movie)),
           );
         }),
         const Divider(color: Colors.white12),

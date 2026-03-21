@@ -1,25 +1,36 @@
+import 'package:clone_netflix/models/movie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/episode.dart';
+import '../../services/movie_service.dart';
 
-class EpisodeScreen extends StatefulWidget {
-  final String movieTitle;
-  const EpisodeScreen({super.key, required this.movieTitle});
+class EpisodeScreen extends ConsumerStatefulWidget {
+  final Movie movie;
+
+  const EpisodeScreen({
+    super.key,
+    required this.movie,
+  });
 
   @override
-  State<EpisodeScreen> createState() => _EpisodeScreenState();
+  ConsumerState<EpisodeScreen> createState() => _EpisodeScreenState();
 }
 
-class _EpisodeScreenState extends State<EpisodeScreen> {
-  String selectedSeason = 'Mùa 1';
+class _EpisodeScreenState extends ConsumerState<EpisodeScreen> {
+  int selectedSeasonNumber = 1;
 
   @override
   Widget build(BuildContext context) {
+    final episodesAsync = ref.watch(listEpisodeProvider(widget.movie.id, selectedSeasonNumber));
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
+        elevation: 0,
         title: Text(
-          widget.movieTitle,
-          style: const TextStyle(color: Colors.white, fontSize: 18),
+          widget.movie.originalTitle,
+          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
@@ -29,11 +40,10 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nút chọn Mùa (Season Picker)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: InkWell(
-              onTap: () => _showSeasonPicker(context),
+              onTap: () => _showSeasonPicker(context,widget.movie.numberOfSeason),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
@@ -44,7 +54,7 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      selectedSeason,
+                      'Mùa $selectedSeasonNumber',
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     const Icon(Icons.arrow_drop_down, color: Colors.white),
@@ -54,13 +64,20 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
             ),
           ),
 
-          // Danh sách tập phim
           Expanded(
-            child: ListView.builder(
-              itemCount: 8, // Giả định có 8 tập mỗi mùa
-              itemBuilder: (context, index) {
-                return _buildEpisodeItem(index + 1);
-              },
+            child: episodesAsync.when(
+              data: (episodes) => episodes.isEmpty
+                  ? const Center(child: Text("Không có dữ liệu tập phim", style: TextStyle(color: Colors.white)))
+                  : ListView.builder(
+                itemCount: episodes.length,
+                itemBuilder: (context, index) {
+                  return _buildEpisodeItem(episodes[index]);
+                },
+              ),
+              loading: () => const Center(child: CircularProgressIndicator(color: Colors.red)),
+              error: (err, stack) => Center(
+                child: Text('Lỗi: $err', style: const TextStyle(color: Colors.white)),
+              ),
             ),
           ),
         ],
@@ -68,7 +85,7 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
     );
   }
 
-  Widget _buildEpisodeItem(int episodeNumber) {
+  Widget _buildEpisodeItem(Episode episode) {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -76,35 +93,37 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
         children: [
           Row(
             children: [
-              // Ảnh thumbnail tập phim
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Image.asset(
-                      'assets/image/image.jpg', // Thay bằng ảnh tập phim
+                    Image.network(
+                      episode.fullStillPath,
                       width: 130,
                       height: 75,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Container(width: 130, height: 75, color: Colors.grey[900]),
                     ),
                     const Icon(Icons.play_circle_outline, color: Colors.white, size: 30),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
-              // Thông tin tập
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$episodeNumber. Tên tập phim $episodeNumber',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      '${episode.episodeNumber}. ${episode.name}',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const Text(
-                      '45 phút',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    Text(
+                      '${episode.runtime} phút',
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
                 ),
@@ -113,9 +132,9 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Mô tả ngắn gọn về nội dung của tập phim này để người dùng nắm bắt được diễn biến chính...',
-            style: TextStyle(color: Colors.grey, fontSize: 13),
+          Text(
+            episode.overview.isNotEmpty ? episode.overview : 'Nội dung đang được cập nhật...',
+            style: const TextStyle(color: Colors.grey, fontSize: 13, height: 1.4),
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
           ),
@@ -124,34 +143,35 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
     );
   }
 
-  // Hàm hiển thị Bottom Sheet để chọn Mùa
-  void _showSeasonPicker(BuildContext context) {
+  void _showSeasonPicker(BuildContext context, int totalSeasons) {
     showModalBottomSheet(
       backgroundColor: const Color(0xFF262626),
       context: context,
       builder: (context) {
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: ['Mùa 1', 'Mùa 2', 'Mùa 3', 'Mùa 4'].map((season) {
-              return ListTile(
-                title: Center(
-                  child: Text(
-                    season,
-                    style: TextStyle(
-                      color: season == selectedSeason ? Colors.white : Colors.grey,
-                      fontWeight: season == selectedSeason ? FontWeight.bold : FontWeight.normal,
-                      fontSize: 18,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(totalSeasons, (index) => index + 1).map((seasonNum) {
+                return ListTile(
+                  title: Center(
+                    child: Text(
+                      'Mùa $seasonNum',
+                      style: TextStyle(
+                        color: seasonNum == selectedSeasonNumber ? Colors.white : Colors.grey,
+                        fontWeight: seasonNum == selectedSeasonNumber ? FontWeight.bold : FontWeight.normal,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
-                ),
-                onTap: () {
-                  setState(() => selectedSeason = season);
-                  Navigator.pop(context);
-                },
-              );
-            }).toList(),
+                  onTap: () {
+                    setState(() => selectedSeasonNumber = seasonNum);
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            ),
           ),
         );
       },

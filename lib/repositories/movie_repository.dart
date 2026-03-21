@@ -1,5 +1,6 @@
 import 'package:clone_netflix/config/api_config.dart';
 import 'package:clone_netflix/models/actor.dart';
+import 'package:clone_netflix/models/episode.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../models/movie.dart';
@@ -7,18 +8,20 @@ import '../../models/movie.dart';
 part 'movie_repository.g.dart';
 
 @riverpod
-class MovieRepository extends _$MovieRepository {
-  late final Dio _dio;
+MovieRepository movieRepository(MovieRepositoryRef ref) {
+  return MovieRepository();
+}
 
-  @override
-  void build() {
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: ApiConfig.baseUrl,
-        queryParameters: {'api_key': ApiConfig.apiKey, 'language': 'vi-VN'},
-      ),
-    );
-  }
+class MovieRepository {
+  final Dio _dio;
+
+  MovieRepository()
+    : _dio = Dio(
+        BaseOptions(
+          baseUrl: ApiConfig.baseUrl,
+          queryParameters: {'api_key': ApiConfig.apiKey, 'language': 'en-US'},
+        ),
+      );
 
   Future<List<Movie>> fetchMovies(String endpoint, MediaType type) async {
     final String category = type == MediaType.tv ? 'tv' : 'movie';
@@ -53,7 +56,6 @@ class MovieRepository extends _$MovieRepository {
     try {
       final String category = movie.mediaType == MediaType.tv ? 'tv' : 'movie';
       final response = await _dio.get('/$category/${movie.id}');
-
       if (response.statusCode == 200) {
         return Movie.fromJson(response.data);
       } else {
@@ -82,10 +84,8 @@ class MovieRepository extends _$MovieRepository {
   Future<String?> fetchTrailerMovie(int movieId) async {
     try {
       final response = await _dio.get('/movie/$movieId/videos');
-      print("responseFromRepo: $response");
       if (response.statusCode == 200) {
         final List result = response.data['results'];
-
         final trailer = result.firstWhere(
           (t) => t['type'] == 'Trailer' && t['site'] == 'YouTube',
           orElse: () => result.firstWhere(
@@ -117,6 +117,20 @@ class MovieRepository extends _$MovieRepository {
         }).toList();
       } else {
         throw Exception("not found similar movie");
+      }
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  Future<List<Episode>> fetchEpisode(int movieId, int seasonNumber) async {
+    try {
+      final response = await _dio.get('/tv/$movieId/season/$seasonNumber');
+      if (response.statusCode == 200) {
+        final List<dynamic> results = response.data['episodes'];
+        return results.map((json) => Episode.fromJson(json)).toList();
+      } else {
+        throw Exception("not found episode for movie: $movieId");
       }
     } catch (error) {
       rethrow;

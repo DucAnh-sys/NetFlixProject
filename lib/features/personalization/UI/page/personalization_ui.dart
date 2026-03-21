@@ -246,7 +246,7 @@ class MovieRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final moviesAsync = ref.watch(popularTvShowProvider);
+    final moviesAsync = ref.watch(popularMoviesProvider);
 
     return moviesAsync.when(
 

@@ -18,13 +18,13 @@ Future<List<Movie>> popularTvShow(PopularTvShowRef ref){
 }
 
 @riverpod
-Future<Movie> movieDetail(MovieDetailRef ref, Movie movie) {
-  return ref.watch(movieRepositoryProvider).fetchMovieById(movie);
+Future<Movie> movieDetail(MovieDetailRef ref, int movieId, MediaType type) {
+  return ref.watch(movieRepositoryProvider).fetchMovieById(movieId,type);
 }
 
 @riverpod
-Future<List<Actor>> movieActors(MovieActorsRef ref, Movie movie) {
-  return ref.watch(movieRepositoryProvider).fetchActors(movie);
+Future<List<Actor>> movieActors(MovieActorsRef ref, int movieId, MediaType type) {
+  return ref.watch(movieRepositoryProvider).fetchActors(movieId,type);
 }
 
 @riverpod
@@ -33,8 +33,8 @@ Future<String?> movieTrailer(MovieTrailerRef ref, int movieId){
 }
 
 @riverpod
-Future<List<Movie>> similarMovie(SimilarMovieRef ref, Movie movie){
-  return ref.watch(movieRepositoryProvider).fetchMovieSimilar(movie);
+Future<List<Movie>> similarMovie(SimilarMovieRef ref, int movieId, MediaType type){
+  return ref.watch(movieRepositoryProvider).fetchMovieSimilar(movieId,type);
 }
 
 @riverpod

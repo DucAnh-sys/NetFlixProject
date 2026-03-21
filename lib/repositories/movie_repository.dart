@@ -56,14 +56,14 @@ class MovieRepository {
     return fetchMovies("popular", MediaType.tv);
   }
 
-  Future<Movie> fetchMovieById(Movie movie) async {
+  Future<Movie> fetchMovieById(int movieId, MediaType type) async {
     try {
-      final String category = movie.mediaType == MediaType.tv ? 'tv' : 'movie';
-      final response = await _dio.get('/$category/${movie.id}');
+      final String category = type == MediaType.tv ? 'tv' : 'movie';
+      final response = await _dio.get('/$category/$movieId');
       if (response.statusCode == 200) {
         return Movie.fromJson(response.data);
       } else {
-        throw Exception('Không tìm thấy phim với ID: ${movie.id}');
+        throw Exception('Không tìm thấy phim với ID: $movieId');
       }
     } on DioException catch (e) {
       print('Dio Error: ${e.message}');
@@ -71,10 +71,10 @@ class MovieRepository {
     }
   }
 
-  Future<List<Actor>> fetchActors(Movie movie) async {
+  Future<List<Actor>> fetchActors(int movieId, MediaType type) async {
     try {
-      final String category = movie.mediaType == MediaType.tv ? 'tv' : 'movie';
-      final response = await _dio.get('/$category/${movie.id}/credits');
+      final String category = type == MediaType.tv ? 'tv' : 'movie';
+      final response = await _dio.get('/$category/$movieId/credits');
       if (response.statusCode == 200) {
         final List<dynamic> castJson = response.data['cast'];
         return castJson.take(15).map((json) => Actor.fromJson(json)).toList();
@@ -112,14 +112,14 @@ class MovieRepository {
     return null;
   }
 
-  Future<List<Movie>> fetchMovieSimilar(Movie movie) async {
+  Future<List<Movie>> fetchMovieSimilar(int movieId, MediaType type) async {
     try {
-      final String category = movie.mediaType == MediaType.tv ? 'tv' : 'movie';
-      final response = await _dio.get('/$category/${movie.id}/similar');
+      final String category = type == MediaType.tv ? 'tv' : 'movie';
+      final response = await _dio.get('/$category/$movieId/similar');
       if (response.statusCode == 200) {
         final List<dynamic> results = response.data['results'];
         return results.map((json) {
-          return Movie.fromJson(json, mediaTypeOverride: movie.mediaType);
+          return Movie.fromJson(json, mediaTypeOverride: type);
         }).toList();
       } else {
         throw Exception("not found similar movie");
@@ -141,9 +141,5 @@ class MovieRepository {
     } catch (error) {
       rethrow;
     }
-  }
-
-  Future<void> addToWatchlist(Movie movie) async {
-    print("Đã thêm ${movie.title} vào danh sách");
   }
 }

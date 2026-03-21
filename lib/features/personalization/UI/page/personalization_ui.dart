@@ -323,7 +323,7 @@ class MovieRow extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => MovieDetailScreen(movie: movie),
+                  builder: (_) => MovieDetailScreen(movieId: movie.id,type: movie.mediaType),
                 ),
               );
             },

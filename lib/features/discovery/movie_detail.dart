@@ -9,13 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MovieDetailScreen extends ConsumerWidget {
-  final Movie movie;
+  final int movieId;
+  final MediaType type;
 
-  const MovieDetailScreen({super.key, required this.movie});
+  const MovieDetailScreen({super.key, required this.movieId, required this.type});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final movieAsync = ref.watch(movieDetailProvider(movie));
+    final movieAsync = ref.watch(movieDetailProvider(movieId,type));
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -89,7 +90,7 @@ class MovieDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildCastList(WidgetRef ref, Movie movie) {
-    final actorsAsync = ref.watch(movieActorsProvider(movie));
+    final actorsAsync = ref.watch(movieActorsProvider(movieId,type));
 
     return actorsAsync.when(
       loading: () => const SizedBox(
@@ -181,7 +182,7 @@ class MovieDetailScreen extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (c) => MoreLikeThisScreen(movie: movie),
+                builder: (c) => MoreLikeThisScreen(movieId: movieId,type: type),
               ),
             );
           },

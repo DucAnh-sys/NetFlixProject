@@ -1,7 +1,9 @@
+import 'package:clone_netflix/db/notification_db.dart';
 import 'package:clone_netflix/features/discovery/episode_screen.dart';
 import 'package:clone_netflix/features/discovery/more_like_this.dart';
 import 'package:clone_netflix/features/discovery/play_video.dart';
 import 'package:clone_netflix/models/movie.dart';
+import 'package:clone_netflix/services/favorite_provider.dart';
 import 'package:clone_netflix/services/movie_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,7 +61,7 @@ class MovieDetailScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    _buildInteractionRow(),
+                    _buildInteractionRow(ref,movie),
 
                     const SizedBox(height: 24),
                     const Text(
@@ -264,11 +266,37 @@ class MovieDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInteractionRow() {
-    return const Row(
+  Widget _buildInteractionRow(WidgetRef ref, Movie movie) {
+    final favorites = ref.watch(favoriteProvider);
+    final notifier = ref.read(favoriteProvider.notifier);
+
+    final isFav = favorites.any((m) => m.id == movie.id);
+
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _VerticalIconBtn(Icons.add, 'Danh sách'),
+
+        GestureDetector(
+          onTap: () async {
+            await notifier.toggle(movie);
+            await NotificationDb.addNotification(movie);
+          },
+          child: Column(
+            children: [
+              Icon(
+                isFav ? Icons.favorite : Icons.add,
+                color: isFav ? Colors.red : Colors.white,
+                size: 24,
+              ),
+              const SizedBox(height: 5),
+              const Text(
+                'Danh sách',
+                style: TextStyle(color: Colors.grey, fontSize: 10),
+              ),
+            ],
+          ),
+        ),
+
         _VerticalIconBtn(Icons.thumb_up_outlined, 'Xếp hạng'),
         _VerticalIconBtn(Icons.share, 'Chia sẻ'),
       ],

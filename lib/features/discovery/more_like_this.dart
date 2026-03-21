@@ -1,3 +1,5 @@
+import 'dart:core';
+
 import 'package:clone_netflix/features/discovery/movie_detail.dart';
 import 'package:clone_netflix/services/movie_service.dart';
 import 'package:flutter/material.dart';

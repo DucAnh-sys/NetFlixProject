@@ -1,4 +1,6 @@
+import 'package:clone_netflix/db/notification_db.dart';
 import 'package:clone_netflix/features/discovery/movie_detail.dart';
+import 'package:clone_netflix/services/favorite_provider.dart';
 import 'package:clone_netflix/services/movie_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,15 +31,15 @@ class MyNetflixScreen extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              const SectionTitle(title: "Tác phẩm bạn đã thích"),
-              const SizedBox(height: 12),
-
-              const MovieRow(),
+              // const SectionTitle(title: "Tác phẩm bạn đã thích"),
+              // const SizedBox(height: 12),
+              //
+              // const MovieRow(),
 
               const SizedBox(height: 25),
 
               SectionTitle(
-                title: "Danh sách của tôi",
+                title: "Bộ phim yêu thích của tôi",
                 showMore: true,
                 onTap: () {
                   Navigator.push(
@@ -117,14 +119,57 @@ class ProfileHeader extends StatelessWidget {
 
           const SizedBox(width: 15),
 
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const NotificationScreen(),
-                ),
+          // 🔥 BADGE NOTIFICATION
+          FutureBuilder<int>(
+            future: NotificationDb.getCount(),
+            builder: (context, snapshot) {
+              final count = snapshot.data ?? 0;
+
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const NotificationScreen(),
+                        ),
+                      );
+
+                      // 🔥 reload lại UI khi quay về
+                      (context as Element).markNeedsBuild();
+                    },
+                  ),
+
+                  // 🔴 BADGE
+                  if (count > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Center(
+                          child: Text(
+                            count > 99 ? "99+" : "$count",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               );
             },
           ),
@@ -246,81 +291,73 @@ class MovieRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final moviesAsync = ref.watch(popularMoviesProvider);
+    final movies = ref.watch(favoriteProvider); // ✅ List<Movie>
 
-    return moviesAsync.when(
-
-      loading: () => const Center(
-        child: CircularProgressIndicator(),
-      ),
-
-      error: (error, stack) => Text(
-        "Lỗi: $error",
-        style: const TextStyle(color: Colors.white),
-      ),
-
-      data: (movies) {
-        return SizedBox(
-          height: 190,
-
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-
-            itemCount: movies.length,
-
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-
-              itemBuilder: (context, index) {
-
-                final movie = movies[index];
-
-                return GestureDetector(
-
-                  onTap: () {
-                    print(movie.id);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MovieDetailScreen(
-                          movie: movie,
-                        ),
-                      ),
-                    );
-                  },
-
-                  child: Column(
-                    children: [
-
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          movie.fullPosterPath,
-                          width: 130,
-                          height: 160,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      const Row(
-                        children: [
-                          Icon(Icons.share, color: Colors.white54, size: 18),
-                          SizedBox(width: 4),
-                          Text(
-                            "Chia sẻ",
-                            style: TextStyle(color: Colors.white54),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
-                );
-              }
+    // 🔥 CASE 1: KHÔNG CÓ PHIM
+    if (movies.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+          "Hãy thêm phim yêu thích của bạn ❤️",
+          style: TextStyle(
+            color: Colors.white54,
+            fontSize: 14,
           ),
-        );
-      },
+        ),
+      );
+    }
+    return SizedBox(
+      height: 190,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: movies.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+
+        itemBuilder: (context, index) {
+
+          final movie = movies[index];
+
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MovieDetailScreen(movie: movie),
+                ),
+              );
+            },
+
+            child: Column(
+              children: [
+
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    movie.fullPosterPath,
+                    width: 130,
+                    height: 160,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                const Row(
+                  children: [
+                    Icon(Icons.share, color: Colors.white54, size: 18),
+                    SizedBox(width: 4),
+                    Text(
+                      "Chia sẻ",
+                      style: TextStyle(color: Colors.white54),
+                    )
+                  ],
+                )
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

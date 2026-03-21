@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:clone_netflix/config/api_config.dart';
+import 'package:clone_netflix/db/favorite_db.dart';
 import 'package:clone_netflix/models/actor.dart';
 import 'package:clone_netflix/models/episode.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sqflite/sqflite.dart';
 import '../../models/movie.dart';
 
 part 'movie_repository.g.dart';
@@ -84,8 +88,10 @@ class MovieRepository {
   Future<String?> fetchTrailerMovie(int movieId) async {
     try {
       final response = await _dio.get('/movie/$movieId/videos');
+      print("responseFromRepo: $response");
       if (response.statusCode == 200) {
         final List result = response.data['results'];
+
         final trailer = result.firstWhere(
           (t) => t['type'] == 'Trailer' && t['site'] == 'YouTube',
           orElse: () => result.firstWhere(

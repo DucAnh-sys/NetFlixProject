@@ -70,3 +70,49 @@ Future<List<Movie>> searchMovies(SearchMoviesRef ref) async {
 
   return ref.read(movieRepositoryProvider.notifier).searchMovies(query);
 }
+
+class FilteredMoviesParams {
+  final List<int> genreIds;
+  final bool isMovie;
+
+  const FilteredMoviesParams({
+    required this.genreIds,
+    required this.isMovie,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return other is FilteredMoviesParams &&
+        other.isMovie == isMovie &&
+        _sameGenreIds(other.genreIds, genreIds);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    isMovie,
+    Object.hashAll([...genreIds]..sort()),
+  );
+
+  static bool _sameGenreIds(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+
+    final sortedA = [...a]..sort();
+    final sortedB = [...b]..sort();
+
+    for (int i = 0; i < sortedA.length; i++) {
+      if (sortedA[i] != sortedB[i]) return false;
+    }
+    return true;
+  }
+}
+
+@riverpod
+Future<List<Movie>> filteredMovies(
+    FilteredMoviesRef ref,
+    FilteredMoviesParams params,
+    ) {
+  return ref.watch(movieRepositoryProvider.notifier).fetchByGenres(
+    genreIds: params.genreIds,
+    isMovie: params.isMovie,
+  );
+}

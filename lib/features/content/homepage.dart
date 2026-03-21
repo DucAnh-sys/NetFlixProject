@@ -7,6 +7,7 @@ import '../../services/genre_service.dart';
 import '../../services/movie_service.dart';
 import '../component/footer.dart';
 import '../discovery/movie_detail.dart';
+import 'filtered_movies_screen.dart';
 void main() {
   runApp(const ProviderScope(child: NetflixCloneApp()));
 }
@@ -802,8 +803,8 @@ class _TopMenuItem extends StatelessWidget {
 class _CategoryMenuItem extends StatelessWidget {
   const _CategoryMenuItem();
 
-  void _showCategoryPopup(BuildContext context) {
-    showGeneralDialog(
+  void _showCategoryPopup(BuildContext context) async {
+    final result = await showGeneralDialog(
       context: context,
       barrierLabel: 'Categories',
       barrierDismissible: true,
@@ -828,6 +829,23 @@ class _CategoryMenuItem extends StatelessWidget {
         );
       },
     );
+
+    if (result != null) {
+      final data = result as Map<String, dynamic>;
+      final genreIds = List<int>.from(data['genreIds'] as List);
+      final isMovie = data['isMovie'] as bool;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FilteredMoviesScreen(
+            genreIds: genreIds,
+            isMovie: isMovie,
+            title: isMovie ? 'Filtered Movies' : 'Filtered TV Shows',
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -870,8 +888,8 @@ class _BeautifulCategoryDialogState
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  int? selectedMovieGenreId;
-  int? selectedTvGenreId;
+  final Set<int> selectedMovieGenreIds = {};
+  final Set<int> selectedTvGenreIds = {};
 
   @override
   void initState() {
@@ -881,32 +899,39 @@ class _BeautifulCategoryDialogState
 
   void _onGenreTap(Genre genre, bool isMovie) {
     setState(() {
-      if (isMovie) {
-        selectedMovieGenreId = genre.id;
+      final targetSet = isMovie ? selectedMovieGenreIds : selectedTvGenreIds;
+
+      if (targetSet.contains(genre.id)) {
+        targetSet.remove(genre.id);
       } else {
-        selectedTvGenreId = genre.id;
+        targetSet.add(genre.id);
       }
     });
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFFE50914),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        content: Text(
-          isMovie
-              ? 'Selected Movie Genre: ${genre.name}'
-              : 'Selected TV Genre: ${genre.name}',
-        ),
-      ),
-    );
+  void _onSearchPressed() {
+    final isMovieTab = _tabController.index == 0;
+    final selectedIds =
+    isMovieTab ? selectedMovieGenreIds.toList() : selectedTvGenreIds.toList();
 
-    // Sau này bạn có thể:
-    // 1. đóng popup
-    // 2. chuyển trang kết quả theo genre.id
-    // 3. hoặc filter dữ liệu ngay tại homepage
+    if (selectedIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.orange.shade700,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: const Text('Vui lòng chọn ít nhất 1 category'),
+        ),
+      );
+      return;
+    }
+
+    Navigator.pop(context, {
+      'genreIds': selectedIds,
+      'isMovie': isMovieTab,
+    });
   }
 
   @override
@@ -1017,19 +1042,46 @@ class _BeautifulCategoryDialogState
                     children: [
                       _GenreTabView(
                         title: 'Movie Genres',
-                        subtitle: 'Choose a genre to discover movies',
+                        subtitle: 'Choose one or more genres to discover movies',
                         asyncGenres: movieGenresAsync,
-                        selectedGenreId: selectedMovieGenreId,
+                        selectedGenreIds: selectedMovieGenreIds,
                         onGenreTap: (genre) => _onGenreTap(genre, true),
                       ),
                       _GenreTabView(
                         title: 'TV Show Genres',
-                        subtitle: 'Choose a genre to discover series',
+                        subtitle: 'Choose one or more genres to discover series',
                         asyncGenres: tvGenresAsync,
-                        selectedGenreId: selectedTvGenreId,
+                        selectedGenreIds: selectedTvGenreIds,
                         onGenreTap: (genre) => _onGenreTap(genre, false),
                       ),
                     ],
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 0, 18, 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: _onSearchPressed,
+                      icon: const Icon(Icons.search, color: Colors.white),
+                      label: const Text(
+                        'Search',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE50914),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -1040,19 +1092,18 @@ class _BeautifulCategoryDialogState
     );
   }
 }
-
 class _GenreTabView extends StatelessWidget {
   final String title;
   final String subtitle;
   final AsyncValue<List<Genre>> asyncGenres;
-  final int? selectedGenreId;
+  final Set<int> selectedGenreIds;
   final ValueChanged<Genre> onGenreTap;
 
   const _GenreTabView({
     required this.title,
     required this.subtitle,
     required this.asyncGenres,
-    required this.selectedGenreId,
+    required this.selectedGenreIds,
     required this.onGenreTap,
   });
 
@@ -1105,7 +1156,7 @@ class _GenreTabView extends StatelessWidget {
                 spacing: 10,
                 runSpacing: 12,
                 children: genres.map((genre) {
-                  final isSelected = selectedGenreId == genre.id;
+                  final isSelected = selectedGenreIds.contains(genre.id);
 
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
@@ -1177,7 +1228,6 @@ class _GenreTabView extends StatelessWidget {
     );
   }
 }
-
 class _GenreText extends StatelessWidget {
   final String text;
 

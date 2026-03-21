@@ -608,6 +608,126 @@ final searchMoviesProvider = AutoDisposeFutureProvider<List<Movie>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SearchMoviesRef = AutoDisposeFutureProviderRef<List<Movie>>;
+String _$filteredMoviesHash() => r'a34b658acef815c78ee1c4466a9e16d65898e723';
+
+/// See also [filteredMovies].
+@ProviderFor(filteredMovies)
+const filteredMoviesProvider = FilteredMoviesFamily();
+
+/// See also [filteredMovies].
+class FilteredMoviesFamily extends Family<AsyncValue<List<Movie>>> {
+  /// See also [filteredMovies].
+  const FilteredMoviesFamily();
+
+  /// See also [filteredMovies].
+  FilteredMoviesProvider call(FilteredMoviesParams params) {
+    return FilteredMoviesProvider(params);
+  }
+
+  @override
+  FilteredMoviesProvider getProviderOverride(
+    covariant FilteredMoviesProvider provider,
+  ) {
+    return call(provider.params);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'filteredMoviesProvider';
+}
+
+/// See also [filteredMovies].
+class FilteredMoviesProvider extends AutoDisposeFutureProvider<List<Movie>> {
+  /// See also [filteredMovies].
+  FilteredMoviesProvider(FilteredMoviesParams params)
+    : this._internal(
+        (ref) => filteredMovies(ref as FilteredMoviesRef, params),
+        from: filteredMoviesProvider,
+        name: r'filteredMoviesProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$filteredMoviesHash,
+        dependencies: FilteredMoviesFamily._dependencies,
+        allTransitiveDependencies:
+            FilteredMoviesFamily._allTransitiveDependencies,
+        params: params,
+      );
+
+  FilteredMoviesProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.params,
+  }) : super.internal();
+
+  final FilteredMoviesParams params;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<Movie>> Function(FilteredMoviesRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: FilteredMoviesProvider._internal(
+        (ref) => create(ref as FilteredMoviesRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        params: params,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<Movie>> createElement() {
+    return _FilteredMoviesProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is FilteredMoviesProvider && other.params == params;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, params.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin FilteredMoviesRef on AutoDisposeFutureProviderRef<List<Movie>> {
+  /// The parameter `params` of this provider.
+  FilteredMoviesParams get params;
+}
+
+class _FilteredMoviesProviderElement
+    extends AutoDisposeFutureProviderElement<List<Movie>>
+    with FilteredMoviesRef {
+  _FilteredMoviesProviderElement(super.provider);
+
+  @override
+  FilteredMoviesParams get params => (origin as FilteredMoviesProvider).params;
+}
+
 String _$searchQueryHash() => r'1f7487578a481f855770a91719d9d7f2792ac37e';
 
 /// See also [SearchQuery].

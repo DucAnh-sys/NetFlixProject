@@ -168,4 +168,41 @@ class MovieRepository extends _$MovieRepository {
   Future<void> addToWatchlist(Movie movie) async {
     print("Đã thêm ${movie.title} vào danh sách");
   }
+  Future<List<Movie>> fetchByGenres({
+    required List<int> genreIds,
+    required bool isMovie,
+  }) async {
+    if (genreIds.isEmpty) return [];
+
+    final String category = isMovie ? 'movie' : 'tv';
+    final MediaType mediaType = isMovie ? MediaType.movie : MediaType.tv;
+
+    try {
+      final response = await _dio.get(
+        '/discover/$category',
+        queryParameters: {
+          'with_genres': genreIds.join(','),
+          'sort_by': 'popularity.desc',
+          'include_adult': false,
+          'page': 1,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> results = response.data['results'] ?? [];
+
+        return results.map((json) {
+          return Movie.fromJson(json, mediaTypeOverride: mediaType);
+        }).toList();
+      } else {
+        throw Exception('Lỗi lấy phim theo genre: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      print('Dio Error: ${e.message}');
+      rethrow;
+    } catch (error) {
+      print('Unexpected Error: $error');
+      rethrow;
+    }
+  }
 }

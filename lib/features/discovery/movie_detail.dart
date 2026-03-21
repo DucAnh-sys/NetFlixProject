@@ -249,6 +249,7 @@ class MovieDetailScreen extends ConsumerWidget {
                       NetflixVideoPlayer(
                         youtubeKey: trailerKey,
                         title: movie.title,
+                        movie: movie,
                       ),
                 ),
               );

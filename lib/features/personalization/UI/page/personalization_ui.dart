@@ -1,6 +1,10 @@
+import 'package:clone_netflix/db/history_db.dart';
 import 'package:clone_netflix/db/notification_db.dart';
 import 'package:clone_netflix/features/discovery/movie_detail.dart';
+import 'package:clone_netflix/features/personalization/UI/page/history_screen.dart';
+import 'package:clone_netflix/models/movie.dart';
 import 'package:clone_netflix/services/favorite_provider.dart';
+import 'package:clone_netflix/services/history_provider.dart';
 import 'package:clone_netflix/services/movie_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +24,6 @@ class MyNetflixScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               const SizedBox(height: 10),
 
               const ProfileHeader(),
@@ -31,11 +34,6 @@ class MyNetflixScreen extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              // const SectionTitle(title: "Tác phẩm bạn đã thích"),
-              // const SizedBox(height: 12),
-              //
-              // const MovieRow(),
-
               const SizedBox(height: 25),
 
               SectionTitle(
@@ -44,9 +42,7 @@ class MyNetflixScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const MyListScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const MyListScreen()),
                   );
                 },
               ),
@@ -54,6 +50,24 @@ class MyNetflixScreen extends StatelessWidget {
               const SizedBox(height: 12),
 
               const MovieRow(),
+              const SizedBox(height: 25),
+
+              SectionTitle(
+                title: "Đã xem gần đây",
+                showMore: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HistoryScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              const HistoryRow(),
 
               const SizedBox(height: 30),
             ],
@@ -68,14 +82,8 @@ class MyNetflixScreen extends StatelessWidget {
         currentIndex: 2,
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Trang chủ",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: "Tìm kiếm",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Trang chủ"),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Tìm kiếm"),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: "Netflix của tôi",
@@ -85,6 +93,7 @@ class MyNetflixScreen extends StatelessWidget {
     );
   }
 }
+
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
 
@@ -93,24 +102,17 @@ class ProfileHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 20,
-            backgroundImage: AssetImage("assets/images/avatar.png"),
+        children: [const CircleAvatar(
+          radius: 20,
+          backgroundColor: Colors.black,
+          child: Icon(
+            Icons.movie, // hoặc Icons.live_tv
+            color: Color(0xFFE50914), // đỏ Netflix
+            size: 24,
           ),
+        ),
 
           const SizedBox(width: 10),
-
-          const Text(
-            "❤️❤️❤️",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const Icon(Icons.arrow_drop_down, color: Colors.white),
 
           const Spacer(),
 
@@ -177,6 +179,7 @@ class ProfileHeader extends StatelessWidget {
     );
   }
 }
+
 class DownloadCard extends StatelessWidget {
   const DownloadCard({super.key});
 
@@ -192,7 +195,6 @@ class DownloadCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-
             const Icon(Icons.download, color: Colors.white),
 
             const SizedBox(width: 15),
@@ -201,7 +203,6 @@ class DownloadCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Text(
                     "Tệp tải xuống",
                     style: TextStyle(
@@ -215,22 +216,24 @@ class DownloadCard extends StatelessWidget {
 
                   Text(
                     "Các bộ phim và chương trình bạn tải xuống xuất hiện tại đây.",
-                    style: TextStyle(
-                      color: Colors.white60,
-                      fontSize: 13,
-                    ),
-                  )
+                    style: TextStyle(color: Colors.white60, fontSize: 13),
+                  ),
                 ],
               ),
             ),
 
-            const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16)
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white54,
+              size: 16,
+            ),
           ],
         ),
       ),
     );
   }
 }
+
 class SectionTitle extends StatelessWidget {
   final String title;
   final bool showMore;
@@ -249,7 +252,6 @@ class SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-
           Text(
             title,
             style: const TextStyle(
@@ -266,30 +268,27 @@ class SectionTitle extends StatelessWidget {
               onTap: onTap,
               child: const Row(
                 children: [
-                  Text(
-                    "Xem tất cả",
-                    style: TextStyle(color: Colors.white54),
-                  ),
+                  Text("Xem tất cả", style: TextStyle(color: Colors.white54)),
                   SizedBox(width: 4),
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 14,
                     color: Colors.white54,
-                  )
+                  ),
                 ],
               ),
-            )
+            ),
         ],
       ),
     );
   }
 }
+
 class MovieRow extends ConsumerWidget {
   const MovieRow({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final movies = ref.watch(favoriteProvider); // ✅ List<Movie>
 
     // 🔥 CASE 1: KHÔNG CÓ PHIM
@@ -298,10 +297,7 @@ class MovieRow extends ConsumerWidget {
         padding: EdgeInsets.symmetric(horizontal: 16),
         child: Text(
           "Hãy thêm phim yêu thích của bạn ❤️",
-          style: TextStyle(
-            color: Colors.white54,
-            fontSize: 14,
-          ),
+          style: TextStyle(color: Colors.white54, fontSize: 14),
         ),
       );
     }
@@ -314,7 +310,6 @@ class MovieRow extends ConsumerWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
 
         itemBuilder: (context, index) {
-
           final movie = movies[index];
 
           return GestureDetector(
@@ -324,12 +319,13 @@ class MovieRow extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (_) => MovieDetailScreen(movie: movie),
                 ),
-              );
+              ).then((_) {
+                ref.refresh(historyProvider); // 🔥 thêm dòng này
+              });
             },
 
             child: Column(
               children: [
-
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
@@ -346,17 +342,86 @@ class MovieRow extends ConsumerWidget {
                   children: [
                     Icon(Icons.share, color: Colors.white54, size: 18),
                     SizedBox(width: 4),
-                    Text(
-                      "Chia sẻ",
-                      style: TextStyle(color: Colors.white54),
-                    )
+                    Text("Chia sẻ", style: TextStyle(color: Colors.white54)),
                   ],
-                )
+                ),
               ],
             ),
           );
         },
       ),
+    );
+  }
+}
+
+class HistoryRow extends ConsumerWidget {
+  const HistoryRow({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(historyProvider);
+
+    return historyAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+
+      error: (e, _) => Text("Error: $e"),
+
+      data: (movies) {
+        if (movies.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              "Bạn chưa xem phim nào 🎬",
+              style: TextStyle(color: Colors.white54),
+            ),
+          );
+        }
+
+        return SizedBox(
+          height: 190,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: movies.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final movie = movies[index];
+
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MovieDetailScreen(movie: movie),
+                    ),
+                  ).then((_) {
+                    ref.refresh(historyProvider); // 🔥 KEY
+                  });
+                },
+
+                child: Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        movie.fullPosterPath,
+                        width: 130,
+                        height: 160,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      "Đã xem",
+                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

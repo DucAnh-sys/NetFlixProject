@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:clone_netflix/db/history_db.dart';
+import 'package:clone_netflix/models/movie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -6,11 +8,13 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 class NetflixVideoPlayer extends StatefulWidget {
   final String youtubeKey;
   final String title;
+  final Movie movie;
 
   const NetflixVideoPlayer({
     super.key,
     required this.title,
     required this.youtubeKey,
+    required this.movie,
   });
 
   @override
@@ -21,6 +25,7 @@ class _NetflixVideoPlayerState extends State<NetflixVideoPlayer> {
   late YoutubePlayerController _controller;
   bool _showControls = true;
   Timer? _hideTimer;
+  bool _isSavedHistory=false;
 
   @override
   void initState() {
@@ -47,8 +52,25 @@ class _NetflixVideoPlayerState extends State<NetflixVideoPlayer> {
     _startHideTimer();
   }
 
-  void _onControllerChange() {
-    if (mounted) setState(() {});
+  void _onControllerChange() async{
+   if(!mounted) return;
+   final position = _controller.value.position;
+
+   if(!_isSavedHistory && position.inSeconds >=30){
+     _isSavedHistory=true;
+     await _saveHistory();
+   }
+   setState(() {
+
+   });
+  }
+
+  Future<void> _saveHistory() async{
+    try{
+      await HistoryDb.insertHistory(widget.movie);
+    }catch(e){
+      print("error history");
+    }
   }
 
   void _startHideTimer() {

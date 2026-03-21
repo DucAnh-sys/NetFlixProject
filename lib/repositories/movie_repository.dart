@@ -20,12 +20,12 @@ class MovieRepository {
   final Dio _dio;
 
   MovieRepository()
-    : _dio = Dio(
-        BaseOptions(
-          baseUrl: ApiConfig.baseUrl,
-          queryParameters: {'api_key': ApiConfig.apiKey, 'language': 'en-US'},
-        ),
-      );
+      : _dio = Dio(
+    BaseOptions(
+      baseUrl: ApiConfig.baseUrl,
+      queryParameters: {'api_key': ApiConfig.apiKey, 'language': 'en-US'},
+    ),
+  );
 
   Future<List<Movie>> fetchMovies(String endpoint, MediaType type) async {
     final String category = type == MediaType.tv ? 'tv' : 'movie';
@@ -47,6 +47,7 @@ class MovieRepository {
       rethrow;
     }
   }
+
   Future<List<Movie>> searchMovies(String query) async {
     final cleanQuery = query.trim();
 
@@ -78,19 +79,20 @@ class MovieRepository {
       rethrow;
     }
   }
+
   Future<List<Movie>> fetchMoviePopular() {
     return fetchMovies("popular", MediaType.movie);
   }
 
-  Future<List<Movie>> fetchNowPlaying(){
+  Future<List<Movie>> fetchNowPlaying() {
     return fetchMovies("now_playing", MediaType.movie);
   }
 
-  Future<List<Movie>> fetchUpcoming(){
+  Future<List<Movie>> fetchUpcoming() {
     return fetchMovies("upcoming", MediaType.movie);
   }
 
-  Future<List<Movie>> fetchTopRated(){
+  Future<List<Movie>> fetchTopRated() {
     return fetchMovies("top_rated", MediaType.movie);
   }
 
@@ -109,6 +111,20 @@ class MovieRepository {
       }
     } on DioException catch (e) {
       print('Dio Error: ${e.message}');
+      rethrow;
+    }
+  }
+
+  Future<List<Episode>> fetchEpisode(int movieId, int seasonNumber) async {
+    try {
+      final response = await _dio.get('/tv/$movieId/season/$seasonNumber');
+      if (response.statusCode == 200) {
+        final List<dynamic> results = response.data['episodes'];
+        return results.map((json) => Episode.fromJson(json)).toList();
+      } else {
+        throw Exception("not found episode for movie: $movieId");
+      }
+    } catch (error) {
       rethrow;
     }
   }
@@ -135,14 +151,16 @@ class MovieRepository {
         final List result = response.data['results'];
 
         final trailer = result.firstWhere(
-          (t) => t['type'] == 'Trailer' && t['site'] == 'YouTube',
-          orElse: () => result.firstWhere(
-            (t) => t['type'] == 'Teaser' && t['site'] == 'YouTube',
-            orElse: () => result.firstWhere(
-              (t) => t['type'] == 'Clip' && t['site'] == 'YouTube',
-              orElse: () => null,
-            ),
-          ),
+              (t) => t['type'] == 'Trailer' && t['site'] == 'YouTube',
+          orElse: () =>
+              result.firstWhere(
+                    (t) => t['type'] == 'Teaser' && t['site'] == 'YouTube',
+                orElse: () =>
+                    result.firstWhere(
+                          (t) => t['type'] == 'Clip' && t['site'] == 'YouTube',
+                      orElse: () => null,
+                    ),
+              ),
         );
         if (trailer != null) {
           return trailer['key'];
@@ -171,19 +189,7 @@ class MovieRepository {
     }
   }
 
-  Future<List<Episode>> fetchEpisode(int movieId, int seasonNumber) async {
-    try {
-      final response = await _dio.get('/tv/$movieId/season/$seasonNumber');
-      if (response.statusCode == 200) {
-        final List<dynamic> results = response.data['episodes'];
-        return results.map((json) => Episode.fromJson(json)).toList();
-      } else {
-        throw Exception("not found episode for movie: $movieId");
-      }
-    } catch (error) {
-      rethrow;
-    }
-  }
+
   Future<List<Movie>> fetchByGenres({
     required List<int> genreIds,
     required bool isMovie,

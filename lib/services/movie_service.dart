@@ -15,6 +15,7 @@ Future<List<Movie>> popularMovies(PopularMoviesRef ref) {
 @riverpod
 Future<List<Movie>> popularTvShow(PopularTvShowRef ref){
   return ref.watch(movieRepositoryProvider).fetchTvShowPopular();
+  return ref.watch(movieRepositoryProvider).fetchTvShowPopular();
 }
 @riverpod
 Future<List<Movie>> upcomingMovies(UpcomingMoviesRef ref){

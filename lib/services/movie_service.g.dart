@@ -23,7 +23,7 @@ final popularMoviesProvider = AutoDisposeFutureProvider<List<Movie>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef PopularMoviesRef = AutoDisposeFutureProviderRef<List<Movie>>;
-String _$popularTvShowHash() => r'7f9c13910b7920d027060b8eabfa6643d3ac874b';
+String _$popularTvShowHash() => r'73c95dda372b1096132b660e0e860a3cc2650242';
 
 /// See also [popularTvShow].
 @ProviderFor(popularTvShow)
@@ -40,7 +40,7 @@ final popularTvShowProvider = AutoDisposeFutureProvider<List<Movie>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef PopularTvShowRef = AutoDisposeFutureProviderRef<List<Movie>>;
-String _$upcomingMoviesHash() => r'e474bfe5a02373238f3c49de3933288cb778058c';
+String _$upcomingMoviesHash() => r'023ae14a4fcc763cd17001a4c674477250343613';
 
 /// See also [upcomingMovies].
 @ProviderFor(upcomingMovies)
@@ -57,7 +57,7 @@ final upcomingMoviesProvider = AutoDisposeFutureProvider<List<Movie>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef UpcomingMoviesRef = AutoDisposeFutureProviderRef<List<Movie>>;
-String _$topRatedMoviesHash() => r'dccfca56567bb3e4b7315854cb34dbd78aacce81';
+String _$topRatedMoviesHash() => r'49f310e804e465629e44cdc0339615f1813bcbeb';
 
 /// See also [topRatedMovies].
 @ProviderFor(topRatedMovies)
@@ -74,7 +74,7 @@ final topRatedMoviesProvider = AutoDisposeFutureProvider<List<Movie>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef TopRatedMoviesRef = AutoDisposeFutureProviderRef<List<Movie>>;
-String _$nowPlayingMoviesHash() => r'9ecb44d8fa3bf04268576a5ac77164611ee47bc7';
+String _$nowPlayingMoviesHash() => r'91b136a28b56b4021ff81d4cccda429b05403a4d';
 
 /// See also [nowPlayingMovies].
 @ProviderFor(nowPlayingMovies)
@@ -758,7 +758,7 @@ class _ListEpisodeProviderElement
   int get seasonNumber => (origin as ListEpisodeProvider).seasonNumber;
 }
 
-String _$searchMoviesHash() => r'd770525fce135eef987ca026dd841eef0f0ecaad';
+String _$searchMoviesHash() => r'76a35b007dfffa9984bc34a77925433f13ba1336';
 
 /// See also [searchMovies].
 @ProviderFor(searchMovies)
@@ -775,7 +775,7 @@ final searchMoviesProvider = AutoDisposeFutureProvider<List<Movie>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SearchMoviesRef = AutoDisposeFutureProviderRef<List<Movie>>;
-String _$filteredMoviesHash() => r'a34b658acef815c78ee1c4466a9e16d65898e723';
+String _$filteredMoviesHash() => r'f1b03e0ea20350e3c430d8f680289faed0f03f23';
 
 /// See also [filteredMovies].
 @ProviderFor(filteredMovies)

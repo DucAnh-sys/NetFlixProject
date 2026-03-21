@@ -1,4 +1,6 @@
+import 'package:clone_netflix/db/favorite_db.dart';
 import 'package:clone_netflix/models/actor.dart';
+import 'package:clone_netflix/models/episode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/movie.dart';
@@ -8,43 +10,48 @@ part 'movie_service.g.dart';
 
 @riverpod
 Future<List<Movie>> popularMovies(PopularMoviesRef ref) {
-  return ref.watch(movieRepositoryProvider.notifier).fetchMoviePopular();
+  return ref.watch(movieRepositoryProvider).fetchMoviePopular();
 }
 @riverpod
 Future<List<Movie>> popularTvShow(PopularTvShowRef ref){
-  return ref.watch(movieRepositoryProvider.notifier).fetchTvShowPopular();
+  return ref.watch(movieRepositoryProvider).fetchTvShowPopular();
 }
 @riverpod
 Future<List<Movie>> upcomingMovies(UpcomingMoviesRef ref){
-  return ref.watch(movieRepositoryProvider.notifier).fetchUpcoming();
+  return ref.watch(movieRepositoryProvider).fetchUpcoming();
 }
 @riverpod
 Future<List<Movie>> topRatedMovies(TopRatedMoviesRef ref){
-  return ref.watch(movieRepositoryProvider.notifier).fetchTopRated();
+  return ref.watch(movieRepositoryProvider).fetchTopRated();
 }
 @riverpod
 Future<List<Movie>> nowPlayingMovies(NowPlayingMoviesRef ref){
-  return ref.watch(movieRepositoryProvider.notifier).fetchNowPlaying();
+  return ref.watch(movieRepositoryProvider).fetchNowPlaying();
 }
 
 @riverpod
-Future<Movie> movieDetail(MovieDetailRef ref, Movie movie) {
-  return ref.watch(movieRepositoryProvider.notifier).fetchMovieById(movie);
+Future<Movie> movieDetail(MovieDetailRef ref, int movieId, MediaType type) {
+  return ref.watch(movieRepositoryProvider).fetchMovieById(movieId,type);
 }
 
 @riverpod
-Future<List<Actor>> movieActors(MovieActorsRef ref, Movie movie) {
-  return ref.watch(movieRepositoryProvider.notifier).fetchActors(movie);
+Future<List<Actor>> movieActors(MovieActorsRef ref, int movieId, MediaType type) {
+  return ref.watch(movieRepositoryProvider).fetchActors(movieId,type);
 }
 
 @riverpod
 Future<String?> movieTrailer(MovieTrailerRef ref, int movieId){
-  return ref.watch(movieRepositoryProvider.notifier).fetchTrailerMovie(movieId);
+  return ref.watch(movieRepositoryProvider).fetchTrailerMovie(movieId);
 }
 
 @riverpod
-Future<List<Movie>> similarMovie(SimilarMovieRef ref, Movie movie){
-  return ref.watch(movieRepositoryProvider.notifier).fetchMovieSimilar(movie);
+Future<List<Movie>> similarMovie(SimilarMovieRef ref, int movieId, MediaType type){
+  return ref.watch(movieRepositoryProvider).fetchMovieSimilar(movieId,type);
+}
+
+@riverpod
+Future<List<Episode>> listEpisode(ListEpisodeRef ref, int movieId, int seasonNumber) {
+  return ref.watch(movieRepositoryProvider).fetchEpisode(movieId,seasonNumber);
 }
 
 @riverpod
@@ -68,7 +75,7 @@ Future<List<Movie>> searchMovies(SearchMoviesRef ref) async {
     return [];
   }
 
-  return ref.read(movieRepositoryProvider.notifier).searchMovies(query);
+  return ref.read(movieRepositoryProvider).searchMovies(query);
 }
 
 class FilteredMoviesParams {
@@ -111,7 +118,7 @@ Future<List<Movie>> filteredMovies(
     FilteredMoviesRef ref,
     FilteredMoviesParams params,
     ) {
-  return ref.watch(movieRepositoryProvider.notifier).fetchByGenres(
+  return ref.watch(movieRepositoryProvider).fetchByGenres(
     genreIds: params.genreIds,
     isMovie: params.isMovie,
   );

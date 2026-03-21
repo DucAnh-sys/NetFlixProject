@@ -6,21 +6,22 @@ part of 'movie_repository.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$movieRepositoryHash() => r'384e741bff82d577da500d5f572a6a7d9e91373d';
+String _$movieRepositoryHash() => r'd984537688258d07ee4e7ce71288598e4f92b737';
 
-/// See also [MovieRepository].
-@ProviderFor(MovieRepository)
-final movieRepositoryProvider =
-    AutoDisposeNotifierProvider<MovieRepository, void>.internal(
-      MovieRepository.new,
-      name: r'movieRepositoryProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$movieRepositoryHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+/// See also [movieRepository].
+@ProviderFor(movieRepository)
+final movieRepositoryProvider = AutoDisposeProvider<MovieRepository>.internal(
+  movieRepository,
+  name: r'movieRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$movieRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
-typedef _$MovieRepository = AutoDisposeNotifier<void>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MovieRepositoryRef = AutoDisposeProviderRef<MovieRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

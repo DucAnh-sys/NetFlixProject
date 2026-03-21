@@ -1,3 +1,5 @@
+import 'dart:core';
+
 import 'package:clone_netflix/features/discovery/movie_detail.dart';
 import 'package:clone_netflix/services/movie_service.dart';
 import 'package:flutter/material.dart';
@@ -5,13 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/movie.dart';
 
 class MoreLikeThisScreen extends ConsumerWidget {
-  final Movie movie;
+  final int movieId;
+  final MediaType type;
 
-  const MoreLikeThisScreen({super.key, required this.movie});
+  const MoreLikeThisScreen({super.key, required this.movieId, required this.type});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final similarMoviesAsync = ref.watch(similarMovieProvider(movie));
+    final similarMoviesAsync = ref.watch(similarMovieProvider(movieId,type));
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -48,7 +51,8 @@ class MoreLikeThisScreen extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final movieItem = movies[index];
                     return MovieCard(
-                      movie: movieItem,
+                      movieId: movieItem.id,
+                      type: movieItem.mediaType,
                       title: movieItem.title,
                       imageUrl: movieItem.fullPosterPath,
                     );
@@ -69,13 +73,15 @@ class MoreLikeThisScreen extends ConsumerWidget {
 }
 
 class MovieCard extends StatelessWidget {
-  final Movie movie;
+  final int movieId;
+  final MediaType type;
   final String title;
   final String imageUrl;
 
   const MovieCard({
     super.key,
-    required this.movie,
+    required this.movieId,
+    required this.type,
     required this.title,
     required this.imageUrl,
   });
@@ -87,7 +93,7 @@ class MovieCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MovieDetailScreen(movie: movie,),
+            builder: (context) => MovieDetailScreen(movieId: movieId,type: type),
           ),
         );
       },

@@ -129,22 +129,17 @@ class MovieRepository {
     }
   }
 
-  Future<String?> fetchTrailerMovie(int movieId) async {
+  Future<String?> fetchTrailerMovie(int movieId, MediaType type) async {
     try {
-      final response = await _dio.get('/movie/$movieId/videos');
+      final String category = type == MediaType.tv ? 'tv' : 'movie';
+      final response = await _dio.get('/$category/$movieId/videos');
       print("responseFromRepo: $response");
       if (response.statusCode == 200) {
         final List result = response.data['results'];
 
         final trailer = result.firstWhere(
           (t) => t['type'] == 'Trailer' && t['site'] == 'YouTube',
-          orElse: () => result.firstWhere(
-            (t) => t['type'] == 'Teaser' && t['site'] == 'YouTube',
-            orElse: () => result.firstWhere(
-              (t) => t['type'] == 'Clip' && t['site'] == 'YouTube',
-              orElse: () => null,
-            ),
-          ),
+          orElse: () => null,
         );
         if (trailer != null) {
           return trailer['key'];

@@ -75,10 +75,10 @@ class MovieDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
 
-                    _buildCastList(ref, movie),
+                    _buildCastList(ref, movieId,type),
 
                     const SizedBox(height: 24),
-                    _buildNavigationTiles(context, movie),
+                    _buildNavigationTiles(context, movieId, type),
                   ],
                 ),
               ),
@@ -89,7 +89,7 @@ class MovieDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCastList(WidgetRef ref, Movie movie) {
+  Widget _buildCastList(WidgetRef ref, int movieId, MediaType type) {
     final actorsAsync = ref.watch(movieActorsProvider(movieId,type));
 
     return actorsAsync.when(
@@ -164,16 +164,18 @@ class MovieDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNavigationTiles(BuildContext context, Movie movie) {
+  Widget _buildNavigationTiles(BuildContext context, int movieId, MediaType type) {
+    final bool showEpisodes = type == MediaType.tv;
     return Column(
       children: [
-        _buildTile(context, 'Tập phim & Mùa', Icons.video_library_outlined, () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (c) => EpisodeScreen(movie: movie)),
-          );
-        }),
-        const Divider(color: Colors.white12),
+        if(showEpisodes)
+          _buildTile(context, 'Tập phim & Mùa', Icons.video_library_outlined, () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (c) => EpisodeScreen(movieId: movieId,type: type,)),
+            );
+          }),
+        if(showEpisodes) const Divider(color: Colors.white12),
         _buildTile(
           context,
           'Nội dung tương tự',
@@ -231,7 +233,7 @@ class MovieDetailScreen extends ConsumerWidget {
           onPressed: () async {
             print("movieId: $movie.id");
             final String? trailerKey = await ref.read(
-              movieTrailerProvider(movie.id).future,
+              movieTrailerProvider(movie.id,movie.mediaType).future,
             );
             print("Trailer Key: $trailerKey");
             if (trailerKey != null) {

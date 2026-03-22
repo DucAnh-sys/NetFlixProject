@@ -16,7 +16,8 @@ class HistoryScreen extends ConsumerWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text("Đã xem gần đây"),
+        title: const Text("Đã xem gần đây",style: TextStyle(color: Colors.white),),
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_forever, color: Colors.red),

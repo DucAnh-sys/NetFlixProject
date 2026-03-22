@@ -3,12 +3,17 @@ import 'package:clone_netflix/services/history_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../db/notification_db.dart';
 import '../../models/Genres.dart';
+import '../../services/favorite_provider.dart';
 import '../../services/genre_service.dart';
 import '../../services/movie_service.dart';
 import '../component/footer.dart';
 import '../discovery/movie_detail.dart';
+import '../discovery/play_video.dart';
 import 'filtered_movies_screen.dart';
+import 'media_list_screen.dart';
+import 'genres_filter_screen.dart';
 void main() {
   runApp(const ProviderScope(child: NetflixCloneApp()));
 }
@@ -79,7 +84,7 @@ class HomeScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        _buildHeroSection(context, heroMovie),
+                        _buildHeroSection(context, ref, heroMovie),
                         const SizedBox(height: 20),
 
                         _AsyncMovieSection(
@@ -150,14 +155,14 @@ class HomeScreen extends ConsumerWidget {
               );
             },
           ),
-          _buildTopOverlay(),
+          _buildTopOverlay(context),
         ],
       ),
       bottomNavigationBar: const AppFooter(currentIndex: 0),
     );
   }
 
-  Widget _buildTopOverlay() {
+  Widget _buildTopOverlay(BuildContext context){
     return Container(
       padding: const EdgeInsets.only(top: 18, left: 16, right: 16, bottom: 8),
       decoration: const BoxDecoration(
@@ -219,12 +224,24 @@ class HomeScreen extends ConsumerWidget {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  _TopMenuItem('TV Shows'),
-                  SizedBox(width: 28),
-                  _TopMenuItem('Movies'),
-                  SizedBox(width: 28),
-                  _CategoryMenuItem(),
+                children: [
+                  _TopMenuItem(
+                    'TV Shows',
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MediaListScreen(isMovie: false))
+                    ),
+                  ),
+                  const SizedBox(width: 28),
+                  _TopMenuItem(
+                    'Movies',
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MediaListScreen(isMovie: true))
+                    ),
+                  ),
+                  const SizedBox(width: 28),
+                  const _CategoryMenuItem(),
                 ],
               ),
             ),
@@ -234,7 +251,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeroSection(BuildContext context, Movie movie) {
+  Widget _buildHeroSection(BuildContext context, WidgetRef ref, Movie movie) {
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.78,
       child: Stack(
@@ -300,6 +317,9 @@ class HomeScreen extends ConsumerWidget {
                         label: 'Play',
                         icon: Icons.play_arrow,
                         isPrimary: true,
+                        movie: movie,
+                        ref: ref,
+                        context: context,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -308,6 +328,9 @@ class HomeScreen extends ConsumerWidget {
                         label: 'My List',
                         icon: Icons.add,
                         isPrimary: false,
+                        movie: movie,
+                        ref: ref,
+                        context: context,
                       ),
                     ),
                   ],
@@ -345,14 +368,50 @@ class HomeScreen extends ConsumerWidget {
     required String label,
     required IconData icon,
     required bool isPrimary,
+    required Movie movie,
+    required WidgetRef ref,
+    required BuildContext context,
   }) {
+    final favorites = ref.watch(favoriteProvider);
+    final notifier = ref.read(favoriteProvider.notifier);
+    final isFav = favorites.any((m) => m.id == movie.id);
+
     return ElevatedButton.icon(
-      onPressed: () {},
+      onPressed: () async {
+
+        if (label == 'Play') {
+          final String? trailerKey = await ref.read(
+            movieTrailerProvider(movie.id, movie.mediaType).future,
+          );
+
+          if (trailerKey != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (c) => NetflixVideoPlayer(
+                  youtubeKey: trailerKey,
+                  title: movie.title,
+                  movie: movie,
+                ),
+              ),
+            );
+          }
+        }
+
+        else {
+          await notifier.toggle(movie);
+          await NotificationDb.addNotification(movie);
+        }
+      },
+
       icon: Icon(
-        icon,
+        label == 'My List'
+            ? (isFav ? Icons.favorite : Icons.add)
+            : icon,
         color: isPrimary ? Colors.black : Colors.white,
         size: 22,
       ),
+
       label: Text(
         label,
         style: TextStyle(
@@ -361,6 +420,7 @@ class HomeScreen extends ConsumerWidget {
           fontSize: 14,
         ),
       ),
+
       style: ElevatedButton.styleFrom(
         elevation: 0,
         backgroundColor:
@@ -791,17 +851,21 @@ class _HomeErrorView extends StatelessWidget {
 
 class _TopMenuItem extends StatelessWidget {
   final String title;
+  final VoidCallback onTap;
 
-  const _TopMenuItem(this.title);
+  const _TopMenuItem(this.title, {required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
+    return InkWell(
+      onTap: onTap,
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
       ),
     );
   }

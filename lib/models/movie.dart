@@ -27,6 +27,7 @@ class Movie {
   final bool video;
   final double voteAverage;
   final int voteCount;
+  final int numberOfSeason;
   final MediaType mediaType;
 
   Movie({
@@ -44,6 +45,7 @@ class Movie {
     required this.video,
     required this.voteAverage,
     required this.voteCount,
+    required this.numberOfSeason,
     required this.mediaType,
   });
 
@@ -73,6 +75,7 @@ class Movie {
       video: json['video'] ?? false,
       voteAverage: (json['vote_average'] ?? 0).toDouble(),
       voteCount: json['vote_count'] ?? 0,
+      numberOfSeason: json['number_of_seasons'] ?? 0,
       mediaType: type,
     );
   }
@@ -92,6 +95,7 @@ class Movie {
     bool? video,
     double? voteAverage,
     int? voteCount,
+    int? numberOfSeason,
     MediaType? mediaType,
   }) {
     return Movie(
@@ -109,6 +113,7 @@ class Movie {
       video: video ?? this.video,
       voteAverage: voteAverage ?? this.voteAverage,
       voteCount: voteCount ?? this.voteCount,
+      numberOfSeason: numberOfSeason ?? this.numberOfSeason,
       mediaType: mediaType ?? this.mediaType,
     );
   }

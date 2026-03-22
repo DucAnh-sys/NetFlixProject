@@ -6,7 +6,9 @@ import 'package:clone_netflix/services/history_provider.dart';
 import 'package:clone_netflix/features/discovery/movie_detail.dart';
 
 class HistoryScreen extends ConsumerWidget {
-  const HistoryScreen({super.key});
+  final int movieId;
+  final MediaType type;
+  const HistoryScreen({super.key,required this.movieId,required this.type});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -59,7 +61,7 @@ class HistoryScreen extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => MovieDetailScreen(movie: movie),
+                      builder: (_) => MovieDetailScreen(movieId: movieId,type: type,),
                     ),
                   ).then((_) {
                     ref.refresh(historyProvider);
@@ -76,7 +78,7 @@ class HistoryScreen extends ConsumerWidget {
                   child: Row(
                     children: [
 
-                      // 🎬 Poster + nút X
+
                       Stack(
                         children: [
                           ClipRRect(
@@ -92,7 +94,6 @@ class HistoryScreen extends ConsumerWidget {
                             ),
                           ),
 
-                          // ❌ Nút xoá giống Netflix
                           Positioned(
                             top: 6,
                             right: 6,
@@ -118,7 +119,6 @@ class HistoryScreen extends ConsumerWidget {
                         ],
                       ),
 
-                      // 📄 Info
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(

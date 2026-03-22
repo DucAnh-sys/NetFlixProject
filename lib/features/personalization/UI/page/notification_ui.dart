@@ -1,9 +1,13 @@
 import 'package:clone_netflix/db/notification_db.dart';
 import 'package:clone_netflix/features/personalization/UI/page/personalization_ui.dart';
+import 'package:clone_netflix/models/movie.dart';
 import 'package:flutter/material.dart';
 
+
 class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key});
+  final int movieId;
+  final MediaType type;
+  const NotificationScreen({super.key,required this.movieId,required this.type});
 
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
@@ -40,7 +44,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const MyNetflixScreen()),
+              MaterialPageRoute(builder: (_) => MyNetflixScreen(movieId: widget.movieId, type: widget.type)),
             );
           },
         ),
@@ -174,7 +178,6 @@ class CardNotification extends StatelessWidget {
             ),
           ),
 
-          // 🗑️ NÚT XÓA
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.redAccent),
             onPressed: () async {

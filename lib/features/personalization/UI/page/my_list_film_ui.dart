@@ -34,7 +34,7 @@ class MyListScreen extends ConsumerWidget {
       body: movies.isEmpty
           ? const Center(
         child: Text(
-          "Chưa có phim yêu thích ❤️",
+          "Chưa có phim yêu thích ",
           style: TextStyle(color: Colors.white54),
         ),
       )
@@ -137,7 +137,6 @@ class MovieCard extends ConsumerWidget {
           ),
         ),
 
-        // ❌ NÚT XOÁ
         Positioned(
           top: 6,
           right: 6,

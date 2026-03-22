@@ -63,6 +63,7 @@ class HistoryDb {
         voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0,
         voteCount: 0,
         mediaType: MediaType.fromString(json['media_type'] as String?),
+        numberOfSeason: 0,
       );
     }).toList();
   }

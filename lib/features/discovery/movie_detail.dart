@@ -1,147 +1,139 @@
-import 'package:clone_netflix/db/favorite_db.dart';
 import 'package:clone_netflix/db/notification_db.dart';
 import 'package:clone_netflix/features/discovery/episode_screen.dart';
 import 'package:clone_netflix/features/discovery/more_like_this.dart';
 import 'package:clone_netflix/features/discovery/play_video.dart';
 import 'package:clone_netflix/models/movie.dart';
+import 'package:clone_netflix/services/favorite_provider.dart';
 import 'package:clone_netflix/services/movie_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../services/favorite_provider.dart';
-
 class MovieDetailScreen extends ConsumerWidget {
-  final Movie movie;
+  final int movieId;
+  final MediaType type;
 
-  const MovieDetailScreen({super.key, required this.movie});
+  const MovieDetailScreen({super.key, required this.movieId, required this.type});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final movieAsync = ref.watch(movieDetailProvider(movie));
+    final movieAsync = ref.watch(movieDetailProvider(movieId,type));
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: movieAsync.when(
         loading: () =>
-        const Center(child: CircularProgressIndicator(color: Colors.red)),
-        error: (err, stack) =>
-            Center(
-              child: Text(
-                  'Lỗi: $err', style: const TextStyle(color: Colors.white)),
-            ),
-        data: (movie) =>
-            CustomScrollView(
-              slivers: [
-                _SliverMovieHeader(imageUrl: movie.fullBackdropPath),
+            const Center(child: CircularProgressIndicator(color: Colors.red)),
+        error: (err, stack) => Center(
+          child: Text('Lỗi: $err', style: const TextStyle(color: Colors.white)),
+        ),
+        data: (movie) => CustomScrollView(
+          slivers: [
+            _SliverMovieHeader(imageUrl: movie.fullBackdropPath),
 
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          movie.title.toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        _buildMovieMetadata(movie.releaseDate),
-                        const SizedBox(height: 16),
-                        _buildActionButtons(context, ref, movie),
-                        const SizedBox(height: 16),
-
-                        Text(
-                          movie.overview.isNotEmpty
-                              ? movie.overview
-                              : 'Nội dung đang cập nhật...',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        _buildInteractionRow(ref,movie),
-
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Diễn viên chính',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        _buildCastList(ref, movie),
-
-                        const SizedBox(height: 24),
-                        _buildNavigationTiles(context, movie.title, movie),
-                      ],
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movie.title.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 10),
+                    _buildMovieMetadata(movie.releaseDate),
+                    const SizedBox(height: 16),
+                    _buildActionButtons(context, ref, movie),
+                    const SizedBox(height: 16),
+
+                    Text(
+                      movie.overview.isNotEmpty
+                          ? movie.overview
+                          : 'Nội dung đang cập nhật...',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildInteractionRow(ref,movie),
+
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Diễn viên chính',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    _buildCastList(ref, movieId,type),
+
+                    const SizedBox(height: 24),
+                    _buildNavigationTiles(context, movieId, type),
+                  ],
                 ),
-              ],
+              ),
             ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildCastList(WidgetRef ref, Movie movie) {
-    final actorsAsync = ref.watch(movieActorsProvider(movie));
+  Widget _buildCastList(WidgetRef ref, int movieId, MediaType type) {
+    final actorsAsync = ref.watch(movieActorsProvider(movieId,type));
 
     return actorsAsync.when(
-      loading: () =>
-      const SizedBox(
+      loading: () => const SizedBox(
         height: 110,
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       ),
-      error: (e, s) =>
-      const Text(
+      error: (e, s) => const Text(
         'Không tải được diễn viên',
         style: TextStyle(color: Colors.grey),
       ),
-      data: (actors) =>
-          SizedBox(
-            height: 110,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: actors.length,
-              itemBuilder: (context, index) {
-                final actor = actors[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 35,
-                        backgroundColor: Colors.white10,
-                        backgroundImage: NetworkImage(actor.fullProfilePath),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: 70,
-                        child: Text(
-                          actor.name,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          style: const TextStyle(
-                              color: Colors.grey, fontSize: 10),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+      data: (actors) => SizedBox(
+        height: 110,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: actors.length,
+          itemBuilder: (context, index) {
+            final actor = actors[index];
+            return Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 35,
+                    backgroundColor: Colors.white10,
+                    backgroundImage: NetworkImage(actor.fullProfilePath),
                   ),
-                );
-              },
-            ),
-          ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: 70,
+                    child: Text(
+                      actor.name,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      style: const TextStyle(color: Colors.grey, fontSize: 10),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -172,26 +164,27 @@ class MovieDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNavigationTiles(BuildContext context, String title,
-      Movie movie) {
+  Widget _buildNavigationTiles(BuildContext context, int movieId, MediaType type) {
+    final bool showEpisodes = type == MediaType.tv;
     return Column(
       children: [
-        _buildTile(context, 'Tập phim & Mùa', Icons.video_library_outlined, () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (c) => EpisodeScreen(movieTitle: title)),
-          );
-        }),
-        const Divider(color: Colors.white12),
+        if(showEpisodes)
+          _buildTile(context, 'Tập phim & Mùa', Icons.video_library_outlined, () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (c) => EpisodeScreen(movieId: movieId,type: type,)),
+            );
+          }),
+        if(showEpisodes) const Divider(color: Colors.white12),
         _buildTile(
           context,
           'Nội dung tương tự',
           Icons.auto_awesome_motion_outlined,
-              () {
+          () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (c) => MoreLikeThisScreen(movie: movie),
+                builder: (c) => MoreLikeThisScreen(movieId: movieId,type: type),
               ),
             );
           },
@@ -200,10 +193,12 @@ class MovieDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTile(BuildContext context,
-      String t,
-      IconData i,
-      VoidCallback onTap,) {
+  Widget _buildTile(
+    BuildContext context,
+    String t,
+    IconData i,
+    VoidCallback onTap,
+  ) {
     return ListTile(
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
@@ -238,7 +233,7 @@ class MovieDetailScreen extends ConsumerWidget {
           onPressed: () async {
             print("movieId: $movie.id");
             final String? trailerKey = await ref.read(
-              movieTrailerProvider(movie.id).future,
+              movieTrailerProvider(movie.id,movie.mediaType).future,
             );
             print("Trailer Key: $trailerKey");
             if (trailerKey != null) {
@@ -288,7 +283,7 @@ class MovieDetailScreen extends ConsumerWidget {
 
         GestureDetector(
           onTap: () async {
-            await notifier.toggle(movie); // 🔥 update ngay
+            await notifier.toggle(movie);
             await NotificationDb.addNotification(movie);
           },
           child: Column(

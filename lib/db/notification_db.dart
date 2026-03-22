@@ -35,7 +35,7 @@ class NotificationDb {
     final dbClient = await NotificationDb.db;
 
     await dbClient.insert(
-      'notifications', // ✅ đúng table
+      'notifications',
       {
         'movieId': movie.id,
         'title': 'Đã thêm vào danh sách',
@@ -56,7 +56,7 @@ class NotificationDb {
   }
   Future<void> loadNotifications() async {
     final data = await NotificationDb.getNotifications();
-    print(data); // test trước
+    print(data);
   }
   static Future<int> getCount() async {
     final dbClient = await NotificationDb.db;

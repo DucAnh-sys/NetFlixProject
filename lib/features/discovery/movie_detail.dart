@@ -46,7 +46,7 @@ class MovieDetailScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    _buildMovieMetadata(movie.releaseDate),
+                    _buildMovieMetadata(movie.releaseDate, movie.mediaType),
                     const SizedBox(height: 16),
                     _buildActionButtons(context, ref, movie),
                     const SizedBox(height: 16),
@@ -137,7 +137,7 @@ class MovieDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMovieMetadata(String date) {
+  Widget _buildMovieMetadata(String date, MediaType type) {
     final year = date.isNotEmpty ? date.split('-')[0] : 'N/A';
     return Row(
       children: [
@@ -159,7 +159,9 @@ class MovieDetailScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 15),
-        const Text('Phim lẻ', style: TextStyle(color: Colors.grey)),
+        Text(
+            type == MediaType.movie ? 'Movie' : 'TV Show',
+            style: const TextStyle(color: Colors.grey)),
       ],
     );
   }

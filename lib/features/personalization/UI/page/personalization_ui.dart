@@ -394,7 +394,7 @@ class HistoryRow extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => MovieDetailScreen(movieId: movieId,type: type,),
+                      builder: (_) => MovieDetailScreen(movieId: movie.id,type: type,),
                     ),
                   ).then((_) {
                     ref.refresh(historyProvider);

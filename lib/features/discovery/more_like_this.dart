@@ -1,113 +1,142 @@
-import 'package:flutter/material.dart';
+import 'dart:core';
 
-class MoreLikeThisScreen extends StatelessWidget {
-  final String movieTitle;
-  const MoreLikeThisScreen({super.key, required this.movieTitle});
+import 'package:clone_netflix/features/discovery/movie_detail.dart';
+import 'package:clone_netflix/services/movie_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/movie.dart';
+
+class MoreLikeThisScreen extends ConsumerWidget {
+  final int movieId;
+  final MediaType type;
+
+  const MoreLikeThisScreen({super.key, required this.movieId, required this.type});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final similarMoviesAsync = ref.watch(similarMovieProvider(movieId,type));
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
-        title: Text(
-          'Nội dung tương tự: $movieTitle',
-          style: const TextStyle(
-              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+        title: const Text(
+          'Nội dung tương tự',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0),
-        child: GridView.builder(
-          // Với ảnh ngang và có text bên dưới, tỷ lệ 16/11 là khá ổn
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 1.5, // Điều chỉnh để card không bị kéo quá dài
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+        child: similarMoviesAsync.when(
+          data: (movies) => movies.isEmpty
+              ? const Center(
+                  child: Text(
+                    "Không có nội dung tương tự",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
+              : GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 0.7,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: movies.length,
+                  itemBuilder: (context, index) {
+                    final movieItem = movies[index];
+                    return MovieCard(
+                      movieId: movieItem.id,
+                      type: movieItem.mediaType,
+                      title: movieItem.title,
+                      imageUrl: movieItem.fullPosterPath,
+                    );
+                  },
+                ),
+          loading: () =>
+              const Center(child: CircularProgressIndicator(color: Colors.red)),
+          error: (err, stack) => Center(
+            child: Text(
+              'Lỗi: $err',
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
-          itemCount: 10,
-          itemBuilder: (context, index) {
-            return MovieCard(
-              title: 'Sabrina - Phần $index',
-              imageUrl: 'assets/image/image.jpg',
-            );
-          },
         ),
       ),
     );
   }
 }
 
-// --- WIDGET MOVIECARD NẰM CHUNG FILE ---
 class MovieCard extends StatelessWidget {
+  final int movieId;
+  final MediaType type;
   final String title;
   final String imageUrl;
 
   const MovieCard({
     super.key,
+    required this.movieId,
+    required this.type,
     required this.title,
     required this.imageUrl,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Phần thân chính của Card
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            children: [
-              // Ảnh nền phim
-              Image.asset(
-                imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                errorBuilder: (context, error, stackTrace) =>
-                const Center(child: Icon(Icons.broken_image, color: Colors.white24)),
-              ),
-
-              // Lớp Gradient phủ đen ở dưới để nổi bật Text
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.center,
-                    colors: [
-                      Colors.black87,
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-
-              // Tiêu đề phim ở góc dưới
-              Positioned(
-                bottom: 8,
-                left: 8,
-                right: 8,
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              )
-            ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MovieDetailScreen(movieId: movieId,type: type),
           ),
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.grey[900],
+                child: const Icon(Icons.broken_image, color: Colors.white24),
+              ),
+            ),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Colors.black87, Colors.transparent],
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 4,
+              left: 4,
+              right: 4,
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
